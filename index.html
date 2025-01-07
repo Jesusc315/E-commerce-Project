@@ -78,14 +78,14 @@
     ></script>
     <script>
       document.addEventListener("DOMContentLoaded", function () {
-        const productList=document.querySelector("product-list");
+        const productList=document.querySelector("#product-list");
         let productsData=[];
         let productHTML="";
-        fetch('products.json');
-        .then((response) => response.json());
+        fetch('products.json')
+        .then((response) => response.json())
         .then((data) => {
           productsData = data.products;
-          data.products.forEach((products)=>{
+          data.products.forEach((product)=>{
             productHTML += 
             `<div class="col-md-4">
           <div class="card mb-4">
@@ -98,8 +98,10 @@
               </div>
           </div>
       </div>`;
-          }
         });
+        productList.innerHTML = productHTML;
+      });
+    }
     </script>
   </body>
 </html>
