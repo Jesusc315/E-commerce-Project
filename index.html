@@ -108,13 +108,15 @@
               button.addEventListener("click", addToCart);
             });
             const cart = [];
-
+            
             function addToCart(event) {
               console.log(event.target.getAttribute("data-id"));
               const productId = event.target.getAttribute("data-id");
               const product = productsData[productId - 1];
               let cartItem = {
                 name: product.name,
+                price: product.price,
+                description:product.description
               };
               cart.push(cartItem);
               console.log(cart);
@@ -126,17 +128,31 @@
               cart.forEach((product) => {
                 cartItem += `<div class="col-md-4">
           <div class="card mb-4">
-              <img src="https://placehold.co/100" class="card-img-top" alt="Product 1">
               <div class="card-body">
                   <h5 class="card-title">${product.name}</h5>
                   <p class="card-text">${product.price}</p>
                   <p class="card-text">${product.description}</p>
-                  <button class="btn btn-primary add-to-cart" data-id="${product.id}">Add to Cart</button>
               </div>
           </div>
       </div>`;
               });
               cartList.innerHTML = cartItem;
+            }
+            function removeItems(){
+              const cartList = document.getElementById("cart-list");
+              var removeBtn=document.createElement('button');
+              removeBtn.textContent("remove");
+              document.querySelectorAll('#data-id').forEach((product) => {
+                cartList -= `<div class="col-md-4">
+          <div class="card mb-4">
+              <div class="card-body">
+                  <h5 class="card-title">${product.name}</h5>
+                  <p class="card-text">${product.price}</p>
+                  <p class="card-text">${product.description}</p>
+              </div>
+          </div>
+      </div>`;
+              })
             }
           });
       });
