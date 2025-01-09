@@ -10,7 +10,7 @@
       integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
       crossorigin="anonymous"
     />
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
@@ -55,18 +55,23 @@
         <!-- Products will be dynamically inserted here -->
         <div class="col-md-4">
           <div class="card mb-4">
-              <img src="https://placehold.co/100" class="card-img-top" alt="Product 1">
-              <div class="card-body">
-                  <h5 class="card-title">Product 1</h5>
-                  <p class="card-text">$10.99</p>
-                  <p class="card-text">Description for product 1</p>
-                  <button class="btn btn-primary add-to-cart" data-id="1">Add to Cart</button>
-              </div>
+            <img
+              src="https://placehold.co/100"
+              class="card-img-top"
+              alt="Product 1"
+            />
+            <div class="card-body">
+              <h5 class="card-title">Product 1</h5>
+              <p class="card-text">$10.99</p>
+              <p class="card-text">Description for product 1</p>
+              <button class="btn btn-primary add-to-cart" data-id="1">
+                Add to Cart
+              </button>
+            </div>
           </div>
+        </div>
       </div>
-      </div>
-      </div>
-  
+    </div>
 
     <footer class="bg-light text-center py-3">
       <p>&copy; 2025 E-commerce Website. All rights reserved.</p>
@@ -78,16 +83,15 @@
     ></script>
     <script>
       document.addEventListener("DOMContentLoaded", function () {
-        const productList=document.querySelector("#product-list");
-        let productsData=[];
-        let productHTML="";
-        fetch('products.json')
-        .then((response) => response.json())
-        .then((data) => {
-          productsData = data.products;
-          data.products.forEach((product)=>{
-            productHTML += 
-            `<div class="col-md-4">
+        const productList = document.querySelector("#product-list");
+        let productsData = [];
+        let productHTML = "";
+        fetch("products.json")
+          .then((response) => response.json())
+          .then((data) => {
+            productsData = data.products;
+            data.products.forEach((product) => {
+              productHTML += `<div class="col-md-4">
           <div class="card mb-4">
               <img src="https://placehold.co/100" class="card-img-top" alt="Product 1">
               <div class="card-body">
@@ -98,33 +102,43 @@
               </div>
           </div>
       </div>`;
-        });
-        productList.innerHTML = productHTML;
-        document.querySelectorAll(".add-to-cart").forEach((button) => {
-          button.addEventListener("click" , addToCart);
-        });
-        const cart= [];
-        
-      function addToCart(event){
-        console.log(event.target.getAttribute('data-id'));
-       const productId = event.target.getAttribute('data-id');
-        const product = productsData[productId-1];
-        let cartItem = {
-          name:product.name,
-        };
-        cart.push(cartItem);
-        console.log(cart);
-        renderCart();
-      }  
-      function renderCart(){
-        const cartList = document.getElementById('cart-list');
-        let cartItem = '';
-        cart.forEach((product) => {
-          cartItem +=`<p>${product.name}</p>`;
-        });
-        cartList.innerHTML = cartItem;
-      }
-        })
+            });
+            productList.innerHTML = productHTML;
+            document.querySelectorAll(".add-to-cart").forEach((button) => {
+              button.addEventListener("click", addToCart);
+            });
+            const cart = [];
+
+            function addToCart(event) {
+              console.log(event.target.getAttribute("data-id"));
+              const productId = event.target.getAttribute("data-id");
+              const product = productsData[productId - 1];
+              let cartItem = {
+                name: product.name,
+              };
+              cart.push(cartItem);
+              console.log(cart);
+              renderCart();
+            }
+            function renderCart() {
+              const cartList = document.getElementById("cart-list");
+              let cartItem = "";
+              cart.forEach((product) => {
+                cartItem += `<div class="col-md-4">
+          <div class="card mb-4">
+              <img src="https://placehold.co/100" class="card-img-top" alt="Product 1">
+              <div class="card-body">
+                  <h5 class="card-title">${product.name}</h5>
+                  <p class="card-text">${product.price}</p>
+                  <p class="card-text">${product.description}</p>
+                  <button class="btn btn-primary add-to-cart" data-id="${product.id}">Add to Cart</button>
+              </div>
+          </div>
+      </div>`;
+              });
+              cartList.innerHTML = cartItem;
+            }
+          });
       });
     </script>
   </body>
