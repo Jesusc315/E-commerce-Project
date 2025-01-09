@@ -114,9 +114,9 @@
               const productId = event.target.getAttribute("data-id");
               const product = productsData[productId - 1];
               let cartItem = {
+                id:product.id,
                 name: product.name,
-                price: product.price,
-                description:product.description
+                price: product.price
               };
               cart.push(cartItem);
               console.log(cart);
@@ -131,12 +131,21 @@
               <div class="card-body">
                   <h5 class="card-title">${product.name}</h5>
                   <p class="card-text">${product.price}</p>
-                  <p class="card-text">${product.description}</p>
+                  <button class="btn btn-danger remove-from-cart" data-id="${product.id}">
+                    remove
+                    </button>
               </div>
           </div>
-      </div>`;
+      </div>
+            `;
               });
               cartList.innerHTML = cartItem;
+              document.querySelectorAll('.remove-from-cart').forEach((button) => {
+                button.addEventListener('click' ,removeFromCart);
+              })
+            }
+            function removeFromCart(event){
+              
             }
           });
       });
