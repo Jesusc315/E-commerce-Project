@@ -138,22 +138,6 @@
               });
               cartList.innerHTML = cartItem;
             }
-            function removeItems(){
-              const cartList = document.getElementById("cart-list");
-              var removeBtn=document.createElement('button');
-              removeBtn.textContent("remove");
-              document.querySelectorAll('#data-id').forEach((product) => {
-                cartList -= `<div class="col-md-4">
-          <div class="card mb-4">
-              <div class="card-body">
-                  <h5 class="card-title">${product.name}</h5>
-                  <p class="card-text">${product.price}</p>
-                  <p class="card-text">${product.description}</p>
-              </div>
-          </div>
-      </div>`;
-              })
-            }
           });
       });
     </script>
