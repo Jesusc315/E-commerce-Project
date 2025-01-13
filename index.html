@@ -97,9 +97,11 @@
           <div class="card mb-4">
               <img src="https://placehold.co/100" class="card-img-top" alt="Product 1">
               <div class="card-body">
-                  <h5 class="card-title">${product.name}</h5>
-                  <p class="card-text">${product.price}</p>
-                  <p class="card-text">${product.description}</p>
+                  <h5>$${product.name}</h5>
+                  <p>$${product.price}</p>
+                  <input type="hidden" name="id" value="${product.id}"/>
+                  <input type="hidden" name="name" value="${product.name}"/>
+                  <input type="hidden" name="price" value="${product.price}"/>
                   <button class="btn btn-primary add-to-cart" data-id="${product.id}">Add to Cart</button>
               </div>
           </div>
@@ -131,8 +133,11 @@
                 cartItem += `<div class="col-md-4">
           <div class="card mb-4">
               <div class="card-body">
-                  <h5 class="card-title">${product.name}</h5>
-                  <p class="card-text">${product.price}</p>
+                  <h5>$${product.name}</h5>
+                  <p>$${product.price}</p>
+                  <input type="hidden" name="id" value="${product.id}"/>
+                  <input type="hidden" name="name" value="${product.name}"/>
+                  <input type="hidden" name="price" value="${product.price}"/>
                   <button class="btn btn-danger remove-from-cart" data-id="${product.id}">
                     remove
                     </button>
@@ -147,7 +152,12 @@
               })
             }
             function removeFromCart(event){
-              
+              const productId=event.target.getAttribute('data-id');
+              const productIndex=cart.findIndex(
+                (product) => product.id == productId,
+              );
+              cart.splice(productIndex,1)
+              renderCart();
             }
           });
       });

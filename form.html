@@ -104,11 +104,16 @@
               const cartList = document.getElementById("cart-list");
               let cartItem = "";
               cart.forEach((product) => {
-                cartItem += `<div class="col-md-4">
+                cartItem += 
+                `<div class="col-md-4">
           <div class="card mb-4">
               <div class="card-body">
-                  <h5 class="card-title">${product.name}</h5>
-                  <p class="card-text">${product.price}</p>
+                <div class="cart-item">
+                  <h5>$${product.name}</h5>
+                  <p>$${product.price}</p>
+                  <input type="hidden" name="id" value="${product.id}"/>
+                  <input type="hidden" name="name" value="${product.name}"/>
+                  <input type="hidden" name="price" value="${product.price}"/>
                   <button class="btn btn-danger remove-from-cart" data-id="${product.id}">
                     remove
                     </button>
