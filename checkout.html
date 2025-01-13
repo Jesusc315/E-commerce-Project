@@ -184,7 +184,8 @@
           let cartItem='';
           for(let [key, value] of cart){
             console.log(key,value);
-            cartItem += `<p> ${key}${value}</p>
+            cartItem += `<p> ${key}=${value}</p>
+            
             `;
           }
           cartList.innerHTML = cartItem;
