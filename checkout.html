@@ -10,9 +10,9 @@
     integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
     crossorigin="anonymous"
   />
-</head>
-<body>
-  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <a class="navbar-brand" href="#">Navbar</a>
     <button
       class="navbar-toggler"
@@ -39,17 +39,17 @@
       </ul>
     </div>
   </nav>
-
+  
     <div class="container mt-5">
       <h1>Checkout</h1>
       <div id="cart-summary">
         <!-- Cart summary will be dynamically inserted here -->
       </div>
+      
       <form id="checkout-form">
         <h2>Login</h2>
         <div class="form-group">
-          <label for="email"
-            >Email address <span class="text-danger">*</span></label
+          <label for="email">Email address <span class="text-danger">*</span></label
           >
           <input
             type="email"
@@ -60,8 +60,7 @@
           />
         </div>
         <div class="form-group">
-          <label for="password"
-            >Password <span class="text-danger">*</span></label
+          <label for="password">Password <span class="text-danger">*</span></label
           >
           <input
             type="password"
@@ -73,8 +72,7 @@
         </div>
         <h2>Shipping Address</h2>
         <div class="form-group">
-          <label for="address"
-            >Address <span class="text-danger">*</span></label
+          <label for="address">Address <span class="text-danger">*</span></label
           >
           <input
             type="text"
@@ -170,10 +168,11 @@
           />
         </div>
         <div id="error-message" class="text-danger"></div>
+        <button type="reset" class="btn btn-secondary">Reset</button>
         <button type="submit" class="btn btn-primary">Submit</button>
       </form>
     </div>
-
+  
     <script>
       document.addEventListener("DOMContentLoaded",function () {
         const query = new URLSearchParams(window.location.search);
@@ -188,7 +187,9 @@
             
             `;
           }
+          
           cartList.innerHTML = cartItem;
+          console.log(query.get("price")); // "10:99"
         }
         renderCart();
       });
