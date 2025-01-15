@@ -45,9 +45,24 @@
       <div id="cart-summary">
         <!-- Cart summary will be dynamically inserted here -->
       </div>
-      
+      <h2>Subtotal</h2>
+      <div id="subtotal">
+        <!-- Subtotal will display here-->
+         
+      </div>
+      <h2>Tax</h2>
+      <div id="tax">
+         <!-- Tax will display here-->
+
+      </div>
+      <h2>Total</h2>
+      <div id="total">
+         <!-- Total will display here-->
+
+      </div>
       <form id="checkout-form">
         <h2>Login</h2>
+        <h3 id="error"></h3>
         <div class="form-group">
           <label for="email">Email address <span class="text-danger">*</span></label
           >
@@ -172,27 +187,67 @@
         <button type="submit" class="btn btn-primary">Submit</button>
       </form>
     </div>
-  
-    <script>
-      document.addEventListener("DOMContentLoaded",function () {
+  <script>
+   document.addEventListener("DOMContentLoaded", function () {
         const query = new URLSearchParams(window.location.search);
-        console.log(Array.from(query.entries()));
-        const cart= Array.from(query.entries());
-        function renderCart(){
-          const cartList= document.getElementById('cart-summary');
-          let cartItem='';
-          for(let [key, value] of cart){
-            console.log(key,value);
-            cartItem += `<p> ${key}=${value}</p>
-            
-            `;
-          }
+        const cartItems = Array.from(query.entries()); // Get query parameters as key-value pairs
+        
+        // Function to calculate subtotal, tax and total
+        function calculatePrices() {
+          let subtotal = 0;
           
-          cartList.innerHTML = cartItem;
-          console.log(query.get("price")); // "10:99"
+          // Loop through query parameters and sum prices
+          cartItems.forEach(([key, value]) => {
+            if (key === 'price') {
+              subtotal += parseFloat(value); // Add price to subtotal
+            }
+          });
+
+          const tax = subtotal * 0.15; // 15% tax
+          const total = subtotal + tax;
+
+          // Update the UI with the calculated values
+          document.getElementById('subtotal').textContent = "$"+subtotal.toFixed(2);
+          document.getElementById('tax').textContent = "$"+tax.toFixed(2);
+          document.getElementById('total').textContent = "$"+total.toFixed(2);
         }
-        renderCart();
+
+        // Render cart items in the cart-summary section
+        function renderCart() {
+          const cartList = document.getElementById('cart-summary');
+          let cartItemHTML = '';
+
+          if (cartItems.length > 0) {
+            cartItems.forEach(([key, value]) => {
+              cartItemHTML += `<p><strong>${key}:</strong> ${value}</p>`;
+            });
+          } else {
+            cartItemHTML = '<p>No items in cart</p>';
+          }
+
+          cartList.innerHTML = cartItemHTML;
+          calculatePrices(); // Calculate and update prices
+        }
+
+        renderCart(); // Initial rendering of cart items and prices
       });
+      const email= document.getElementById("email");
+      const password=document.getElementById("password");
+      const errorElement = document.getElementById("error");
+      const form=document.getElementById("checkout-form");
+      form.addEventListener("submit" , (e) => {
+        let messages =[]
+        if (password.value.length <= 6 ){
+          messages.push("Password must be more than 6 characters");
+        }
+        if(password.value.length>= 20){
+          messages.push('Password must be less than 20 characters');
+        }
+        if (messages.length>0){
+          e.preventDefault()
+          errorElement.innerText = messages.join(', ');
+        }
+      })
     </script>
   </body>
 </html>
