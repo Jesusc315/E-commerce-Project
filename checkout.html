@@ -41,7 +41,7 @@
   </nav>
   
     <div class="container mt-5">
-       <form action="confirmation.html" method="get" id="checkout-form">
+       <form id="checkout-form" action="confirmation.html" method="get" >
       <h1>Checkout</h1>
       <div id="cart-summary">
         <!-- Cart summary will be dynamically inserted here -->
@@ -191,14 +191,16 @@
   <script>
    document.addEventListener("DOMContentLoaded", function () {
         const query = new URLSearchParams(window.location.search);
-        const cartItems = Array.from(query.entries()); // Get query parameters as key-value pairs
+        const cartItems1 = Array.from(query.entries()); 
+        const cartSummary = document.getElementById('cart-summary');
+        // Get query parameters as key-value pairs
         
         // Function to calculate subtotal, tax and total
         function calculatePrices() {
           let subtotal = 0;
           
           // Loop through query parameters and sum prices
-          cartItems.forEach(([key, value]) => {
+          cartItems1.forEach(([key, value]) => {
             if (key === 'price') {
               subtotal += parseFloat(value); // Add price to subtotal
             }
@@ -218,8 +220,8 @@
           const cartList = document.getElementById('cart-summary');
           let cartItemHTML = '';
 
-          if (cartItems.length > 0) {
-            cartItems.forEach(([key, value]) => {
+          if (cartItems1.length > 0) {
+            cartItems1.forEach(([key, value]) => {
               cartItemHTML += `<p><strong>${key}:</strong> ${value}</p>`;
             });
           } else {
@@ -231,7 +233,40 @@
         }
 
         renderCart(); // Initial rendering of cart items and prices
+        const ids = query.getAll('id');
+        const names = query.getAll('name');
+        const prices = query.getAll('price');
+ const cartItems = [];
+ let cartItem = '';
+ for (let i = 0; i < ids.length; i++) {
+     cartItem += `
+     <div class="cart-item">
+       <h5>${names[i]}</h5>
+       <p>${parseFloat(prices[i]).toFixed(2)}</p>
+       <input type="hidden" name="id" value="${ids[i]}" />
+       <input type="hidden" name="name" value="${names[i]}" />
+       <input type="hidden" name="price" value="${prices[i]}" />
+     </div>
+     `
+   }
+cartSummary.innerHTML = cartItem
+   document.querySelector('#checkout-form').addEventListener('submit', submitCart);
+
+
+   function submitCart(event){
+     
+     console.log('submitted');
+     fetch('users.json')
+     .then(response => response.json())
+     .then(data => {
+       data.forEach(user => {
+         console.log(user)
+       })
+     })
+   }
+
       });
+      
       const email= document.getElementById("email");
       const password=document.getElementById("password");
       const errorElement = document.getElementById("error");
@@ -249,6 +284,7 @@
           errorElement.innerText = messages.join(', ');
         }
       })
+
     </script>
   </body>
 </html>

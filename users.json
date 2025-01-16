@@ -1,13 +1,13 @@
 [
     {
       "id": 1,
-      "name": "Chill Guy",
+      "name": "Jesus",
       "email": "abc@email.com",
       "password": 123
     },
     {
       "id": 2,
-      "name": "Chill Gay",
+      "name": "Chill Guy",
       "email": "def@email.com",
       "password": 456
     }
