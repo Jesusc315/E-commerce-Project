@@ -5,14 +5,14 @@
       "name": "Product 1",
       "description": "Description for product 1",
       "price": 10.99,
-      "image": "https://placehold.co/100"
+      "image": "image/pngtree-cheese-burger-design-png-image_2437303.jpg"
     },
     {
       "id": 2,
       "name": "Product 2",
       "description": "Description for product 2",
       "price": 12.99,
-      "image": "https://placehold.co/100"
+      "image": "https://inexpens.com/wp-content/uploads/2023/05/Brown-Wood-Ballpoint-Pen-100x100.jpg"
     },
     {
       "id": 3,
