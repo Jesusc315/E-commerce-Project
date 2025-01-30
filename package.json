@@ -1,0 +1,13 @@
+{
+  "name": "e-commerce-project",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "main": "database.js",
+  "scripts": {
+    "test": "node index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
