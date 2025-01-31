@@ -1,13 +1,17 @@
 {
-  "name": "e-commerce-project",
+  "name": "javascript-mongodb",
   "version": "1.0.0",
   "description": "",
   "type": "module",
-  "main": "database.js",
+  "main": "index.js",
   "scripts": {
     "test": "node index.js"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.21.2",
+    "mongoose": "^8.9.5"
+  }
 }
