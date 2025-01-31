@@ -8,14 +8,16 @@
 
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	// "features": {},
-
+"forwardPorts": [4000],
+"postCreateCommand": "npm install",
 	// Configure tool-specific properties.
 	"customizations": {
 		// Configure properties specific to VS Code.
 		"vscode": {
 			// Add the IDs of extensions you want installed when the container is created.
 			"extensions": [
-				"mongodb.mongodb-vscode"
+				"esben.prettier-vscode",
+				"rangav.vscode-thunder-client"
 			]
 		}
 	}
