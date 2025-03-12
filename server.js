@@ -1,17 +1,22 @@
-import { todoRouter } from './workspaces/E-commerce-Project/index.js';
-// Add near top of server.js
 import express from 'express';
 import mongoose from 'mongoose';
 import * as dotenv from 'dotenv';
 import { join } from 'path';  // Importing the 'join' method from 'path'
+import { fileURLToPath } from 'url'; // To use fileURLToPath
+import { dirname } from 'path';  // To extract the directory name
 
 // Load environment variables
 dotenv.config();
+
+// Get __dirname equivalent in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 // Initialize express
 const app = express();
 const port = 3000;
 app.use(express.static('client'));
+
 // Middleware
 app.use(express.json());
 
@@ -21,17 +26,19 @@ mongoose.connect(process.env.MONGODB_URI)
   .catch(err => console.error('MongoDB connection error:', err));
 
 // Use routes
+import { todoRouter } from './index.js';  // Ensure this import is placed here
 app.use('/api', todoRouter);
 
 // Basic route to serve the index.html file
 app.get('/', (req, res) => {
-    res.sendFile(join(__dirname, 'client/index.html'));
+    res.sendFile(join(__dirname, './index.html'));
 });
 
 // Start server
-app.listen(port, () => {
+const server = app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}`);
 });
+
 process.on("SIGINT", () => {
   console.log("Stopping server...");
   server.close(() => {
