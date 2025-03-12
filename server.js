@@ -1,30 +1,41 @@
+import { todoRouter } from './index.js';
+// Add near top of server.js
 import express from 'express';
 import mongoose from 'mongoose';
 import * as dotenv from 'dotenv';
-import { join } from 'path';
-import { Server } from 'http';
+import { join } from 'path';  // Importing the 'join' method from 'path'
 
+// Load environment variables
 dotenv.config();
 
-const app=express();
-const port=5000;
+// Initialize express
+const app = express();
+const port = 3000;
 app.use(express.static('client'));
+// Middleware
 app.use(express.json());
 
-mongoose.connect(process.env.MONGO_URI)
-.then(()=>console.log('Connected to MongoDB'))
-.catch((err)=>console.log(err));
-app.use('/api',require('./routes/api'));
- 
-app.get('*',(req,res)=>{
-    res.sendFile(join(__dirname,'client/index.html'));
-}
-);
-app.listen(port,()=>console.log(`Server is running on port ${port}`));
-process.on("SINGINT", () => {
-    console.log("Shutting down");
-    Server.close(() => {
-        console.log("Server is closed");
-    }
-    );
-}
+// MongoDB Connection
+mongoose.connect(process.env.MONGODB_URI)
+  .then(() => console.log('Connected to MongoDB'))
+  .catch(err => console.error('MongoDB connection error:', err));
+
+// Use routes
+app.use('/api', todoRouter);
+
+// Basic route to serve the index.html file
+app.get('/', (req, res) => {
+    res.sendFile(join(__dirname, 'client/index.html'));
+});
+
+// Start server
+app.listen(port, () => {
+    console.log(`Server running at http://localhost:${port}`);
+});
+process.on("SIGINT", () => {
+  console.log("Stopping server...");
+  server.close(() => {
+    console.log("Server stopped. Port released.");
+    process.exit(0);
+  });
+});
