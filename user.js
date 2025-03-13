@@ -1,9 +1,18 @@
-var express = require('express');
-var router = express.Router();
-
-/* GET users listing. */
-router.get('/', function(req, res, next) {
-  res.send('respond with a resource');
+import mongoose from "mongoose";
+const addressSchema = new mongoose.Schema({
+    street:{ type: String, required: true },
+    city: { type: String, required: true },
+    state: { type: String, required: true },
+    zip: { type: String, required: true }
+});
+const userSchema = new mongoose.Schema({
+    name: { type: String, required: true },
+    lastName: { type: String, required: true },
+    email: { type: String, required: true },
+    password: { type: String, required: true },
+    address:{ type: addressSchema, required: true }
 });
 
-module.exports = router;
+export const User = mongoose.model('User', userSchema);
+
+export default User;

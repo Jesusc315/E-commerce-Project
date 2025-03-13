@@ -32,6 +32,9 @@ app.use('/api', todoRouter);
 // Basic route to serve the index.html file
 app.get('/', (req, res) => {
     res.sendFile(join(__dirname, './index.html'));
+    res.sendFile(join(__dirname, './checkout.html'));
+    res.sendFile(join(__dirname, './confirmation.html'));
+    res.sendFile(join(__dirname, './form.html'));
 });
 
 // Start server

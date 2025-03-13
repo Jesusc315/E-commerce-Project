@@ -1,14 +1,14 @@
 {
   "name": "e-commerce-project",
   "version": "0.0.0",
-
   "private": true,
-  "type" : "module",
+  "type": "module",
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js"
   },
   "dependencies": {
+    "bcryptjs": "^3.0.2",
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
     "dotenv": "^16.4.7",
