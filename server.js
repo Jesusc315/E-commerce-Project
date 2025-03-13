@@ -1,24 +1,20 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import * as dotenv from 'dotenv';
-import { join } from 'path';  // Importing the 'join' method from 'path'
-import { fileURLToPath } from 'url'; // To use fileURLToPath
-import { dirname } from 'path';  // To extract the directory name
+import { todoRouter } from './index.js';
 
 // Load environment variables
 dotenv.config();
 
-// Get __dirname equivalent in ES modules
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+
 
 // Initialize express
 const app = express();
 const port = 3000;
-app.use(express.static('client'));
 
 // Middleware
 app.use(express.json());
+app.use(express.static('public'));
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGODB_URI)
@@ -26,15 +22,12 @@ mongoose.connect(process.env.MONGODB_URI)
   .catch(err => console.error('MongoDB connection error:', err));
 
 // Use routes
-import { todoRouter } from './index.js';  // Ensure this import is placed here
+  // Ensure this import is placed here
 app.use('/api', todoRouter);
 
 // Basic route to serve the index.html file
 app.get('/', (req, res) => {
-    res.sendFile(join(__dirname, './index.html'));
-    res.sendFile(join(__dirname, './checkout.html'));
-    res.sendFile(join(__dirname, './confirmation.html'));
-    res.sendFile(join(__dirname, './form.html'));
+    res.json('welcome to my site');
 });
 
 // Start server
