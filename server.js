@@ -1,9 +1,7 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import * as dotenv from 'dotenv';
-import path from 'path';
-import cors from 'cors';
-import { productRouter } from './index.js';
+import { productRouter } from './product.js';
 
 // Load environment variables
 dotenv.config();
@@ -15,7 +13,6 @@ const port = 3000;
 // Middleware
 app.use(express.json()); // For parsing JSON requests
 app.use(express.static('public')); // Serve static files from 'public' folder
-app.use(cors()); // Enable CORS for cross-origin requests
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGODB_URI)

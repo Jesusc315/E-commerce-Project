@@ -11,17 +11,21 @@ const ProductSchema = new mongoose.Schema({
 });
 const product = mongoose.model('Product', ProductSchema);
 
-// GET all todos
+// GET all products
 router.get('/product', async (req, res) => {
-    try {
-        const product = await Todo.find().sort({ createdAt: -1 });
-        res.json(todos);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
+    {"products" [
+        {
+            "id":1,
+            "name":"Product 1",
+            "description":"Description for product 1",
+            "price":10.99,
+            "image": "image/pngtree-cheese-burger-design-png-image_2437303.jpg"
+        }
+    ]
+}
 });
 
-// CREATE todo
+// CREATE products
 router.post('/product', async (req, res) => {
     const todo = new Product(req.body);
     try {
@@ -32,7 +36,7 @@ router.post('/product', async (req, res) => {
     }
 });
 
-// GET a specific todo by ID
+// GET a specific product by ID
 router.get('/[product]/:id', async (req, res) => {
     try {
         const product = await product.findById(req.params.id);
