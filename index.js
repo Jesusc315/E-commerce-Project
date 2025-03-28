@@ -3,18 +3,18 @@ import express from 'express';
 const router = express.Router();
 
 // Todo Schema and Model
-const todoSchema = new mongoose.Schema({
-    title: { 
+const ProductSchema = new mongoose.Schema({
+    product: { 
         type: String, 
         required: true 
     }
 });
-const Todo = mongoose.model('Todo', todoSchema);
+const product = mongoose.model('Product', ProductSchema);
 
 // GET all todos
-router.get('/todos', async (req, res) => {
+router.get('/product', async (req, res) => {
     try {
-        const todos = await Todo.find().sort({ createdAt: -1 });
+        const product = await Todo.find().sort({ createdAt: -1 });
         res.json(todos);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -22,40 +22,40 @@ router.get('/todos', async (req, res) => {
 });
 
 // CREATE todo
-router.post('/todos', async (req, res) => {
-    const todo = new Todo(req.body);
+router.post('/product', async (req, res) => {
+    const todo = new Product(req.body);
     try {
-        const newTodo = await todo.save();
-        res.status(201).json(newTodo);
+        const newProduct = await product.save();
+        res.status(201).json(newProduct);
     } catch (error) {
         res.status(400).json({ message: error.message });
     }
 });
 
 // GET a specific todo by ID
-router.get('/todos/:id', async (req, res) => {
+router.get('/[product]/:id', async (req, res) => {
     try {
-        const todo = await Todo.findById(req.params.id);
-        if (!todo) {
-            return res.status(404).json({ message: 'Todo not found' });
+        const product = await product.findById(req.params.id);
+        if (!product) {
+            return res.status(404).json({ message: 'Product not found' });
         }
-        res.json(todo);
+        res.json(product);
     } catch (error) {
-        res.status(500).json({ message: 'Error fetching todo' });
+        res.status(500).json({ message: 'Error fetching product' });
     }
 });
 
 // DELETE a specific todo by ID
-router.delete('/todos/:id', async (req, res) => {
+router.delete('/product/:id', async (req, res) => {
     try {
-        const todo = await Todo.findByIdAndDelete(req.params.id);
-        if (!todo) {
-            return res.status(404).json({ message: 'Todo not found' });
+        const product = await product.findByIdAndDelete(req.params.id);
+        if (!product) {
+            return res.status(404).json({ message: 'Product not found' });
         }
-        res.json({ message: 'Todo deleted successfully' });
+        res.json({ message: 'Product deleted successfully' });
     } catch (error) {
-        res.status(500).json({ message: 'Error deleting todo' });
+        res.status(500).json({ message: 'Error deleting product' });
     }
 });
 
-export { router as todoRouter };
+export { router as productRouter };

@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 import * as dotenv from 'dotenv';
 import path from 'path';
 import cors from 'cors';
-import { todoRouter } from './index.js';
+import { productRouter } from './index.js';
 
 // Load environment variables
 dotenv.config();
@@ -23,28 +23,8 @@ mongoose.connect(process.env.MONGODB_URI)
   .catch(err => console.error('MongoDB connection error:', err));
 
 // Use routes for API
-app.use('/api', todoRouter);
+app.use('/api', productRouter);
 
-// Resolve the current directory path using import.meta.url
-const __dirname = path.dirname(new URL(import.meta.url).pathname);
-
-// Serve static HTML files from the public folder
-// These will automatically be available at their respective routes
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'public', 'index.html'));
-});
-app.get('/checkout', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'public', 'checkout.html'));
-});
-app.get('/confirmation', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'public', 'confirmation.html'));
-});
-app.get('/form', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'public', 'form.html'));
-});
-app.get('/register', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'public', 'register.html'));
-});
 
 // Handle undefined routes (404 error)
 app.use((req, res) => {
