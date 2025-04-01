@@ -13,6 +13,6 @@ const userSchema = new mongoose.Schema({
     address:{ type: addressSchema, required: true }
 });
 
-export const User = mongoose.model('User', userSchema);
+export const user = mongoose.model('user', userSchema);
 
-export default User;
+export default user;
