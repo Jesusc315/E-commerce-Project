@@ -20,7 +20,9 @@ mongoose.connect(process.env.MONGODB_URI)
   .catch(err => console.error('MongoDB connection error:', err));
 
 // Use routes for API
-app.use('/api', productRouter);
+app.get('/' , (req,res) => {
+  res.send('Hello World!')
+})
 
 
 // Handle undefined routes (404 error)
