@@ -1,7 +1,8 @@
+import { productRouter } from './product.js';
 import express from 'express';
 import mongoose from 'mongoose';
 import * as dotenv from 'dotenv';
-import { productRouter } from './product.js';
+
 
 // Load environment variables
 dotenv.config();
@@ -20,10 +21,11 @@ mongoose.connect(process.env.MONGODB_URI)
   .catch(err => console.error('MongoDB connection error:', err));
 
 // Use routes for API
-app.get('/' , (req,res) => {
-  res.send('Hello World!')
-})
+app.use('api', productRouter);
 
+app.get('/' , (req,res)=> {
+  res.sendFile_(join(__dirname , 'public/index.html'));
+});
 
 // Handle undefined routes (404 error)
 app.use((req, res) => {

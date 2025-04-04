@@ -3,13 +3,13 @@ import express from 'express';
 const router = express.Router();
 
 // Todo Schema and Model
-const ProductSchema = new mongoose.Schema({
+const productSchema = new mongoose.Schema({
     product: { 
         type: String, 
         required: true 
     }
 });
-const Product = mongoose.model('Product', ProductSchema);  // Changed to Product for consistency
+const Product = mongoose.model('Product', productSchema);  // Changed to Product for consistency
 
 // GET all products
 router.get('/product', async (req, res) => {
