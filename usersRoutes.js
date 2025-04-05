@@ -1,6 +1,6 @@
 import express from 'express';
 import { User } from './user.js';  // Adjust this path to match your file structure
-import { Product } from './product.js';  // Adjust this path to match your file structure
+import { productRouter } from './product.js';  // Adjust this path to match your file structure
 import jwt from 'jsonwebtoken';  // Add this import at the top of the file
 
 
@@ -109,4 +109,4 @@ router.post('/cart', async (req, res) => {
   }
 });
 
-export { router };
+export { router as userRouter};

@@ -1,6 +1,6 @@
 import express from 'express';
 import { User } from './user'; // Assuming User model is defined
-import { Product } from '../models/product';
+import { productRouter } from './product.js';
 
 const router = express.Router();
 

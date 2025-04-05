@@ -4,11 +4,10 @@ const router = express.Router();
 
 // Todo Schema and Model
 const productSchema = new mongoose.Schema({
-    product: { 
-        type: String, 
-        required: true 
-    }
-});
+    name: { type: String, required: true },
+    price: { type: Number, required: true },
+    description: { type: String, required: true },
+  });
 const Product = mongoose.model('Product', productSchema);  // Changed to Product for consistency
 
 // GET all products
@@ -22,7 +21,7 @@ router.get('/product', async (req, res) => {
 });
 
 // CREATE product
-router.post('/api/product', async (req, res) => {
+router.post('/product', async (req, res) => {
     const product = new Product(req.body);  // Changed to Product to use the correct model
     try {
         const newProduct = await product.save();
@@ -33,7 +32,7 @@ router.post('/api/product', async (req, res) => {
 });
 
 // GET a specific product by ID
-router.get('/product/:id', async (req, res) => {  // Corrected route to /product/:id
+router.get('/product', async (req, res) => {  // Corrected route to /product/:id
     try {
         const product = await Product.findById(req.params.id);  // Use the Product model here
         if (!product) {
@@ -46,7 +45,7 @@ router.get('/product/:id', async (req, res) => {  // Corrected route to /product
 });
 
 // DELETE a specific product by ID
-router.delete('/product/:id', async (req, res) => {
+router.delete('/product', async (req, res) => {
     try {
         const product = await Product.findByIdAndDelete(req.params.id);  // Use the Product model here
         if (!product) {

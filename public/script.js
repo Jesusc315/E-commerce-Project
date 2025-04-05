@@ -4,9 +4,10 @@ document.addEventListener("DOMContentLoaded", function () {
     let productHTML = "";
     
     // Fetching products from the backend API
-    fetch("http://localhost:3000/product")
+    fetch("/products")
       .then((response) => response.json())
       .then((data) => {
+        console.log('fetched products:' ,data)
         productsData = data.products;
         data.products.forEach((product) => {
           productHTML += `<div class="col-md-4">

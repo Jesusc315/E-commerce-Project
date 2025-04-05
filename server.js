@@ -22,7 +22,16 @@ mongoose.connect(process.env.MONGODB_URI)
   .catch(err => console.error('MongoDB connection error:', err));
 
 // Use routes for API
-app.use('/api/products', productRouter);
+app.get('/products'),async(req,res) =>{
+  try{
+    const products=await Product.find( );
+    res.json({ products});
+  }catch(error){
+    console.error('Error fetching products:', error);
+    res.status(500) .json({ message:'Error fetching products'});
+  }
+}
+app.use('/product', productRouter);
 app.use('/api/users', userRouter);
 app.get('/' , (req,res)=> {
   res.sendFile_(join(__dirname , 'public/index.html'));
