@@ -1,7 +1,8 @@
 import express from 'express';
-import { User } from './models/user';  // Adjust this path to match your file structure
-import { Product } from './models/product';  // Adjust this path to match your file structure
-import jwt from 'jsonwebtoken';  // To generate and verify JWT tokens
+import { User } from './user.js';  // Adjust this path to match your file structure
+import { Product } from './product.js';  // Adjust this path to match your file structure
+import jwt from 'jsonwebtoken';  // Add this import at the top of the file
+
 
 const router = express.Router();
 
