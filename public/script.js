@@ -38,7 +38,7 @@ document.addEventListener("DOMContentLoaded", function () {
           const product = productsData.find((p) => p._id === productId);
           
           let cartItem = {
-            id: product.id,
+            id: product._id,
             name: product.name,
             price: product.price,
           };
