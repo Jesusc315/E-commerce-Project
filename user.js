@@ -5,7 +5,7 @@ const userSchema = new mongoose.Schema({
   username: {
     type: String,
     required: true,
-    unique: true, // Ensures the username is unique
+    unique: true, // 
   },
   password: {
     type: String,
@@ -34,4 +34,4 @@ userSchema.methods.matchPassword = async function (password) {
 
 const User = mongoose.model('User', userSchema);
 
-export { User };
+export {User}
