@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let productHTML = "";
     
     // Fetching products from the backend API
-    fetch("/products")
+    fetch('products.json')
       .then((response) => response.json())
       .then((data) => {
         console.log('fetched products:' ,data)
@@ -38,7 +38,7 @@ document.addEventListener("DOMContentLoaded", function () {
           const product = productsData.find((p) => p._id === productId);
           
           let cartItem = {
-            id: product._id,
+            id: product.id,
             name: product.name,
             price: product.price,
           };

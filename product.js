@@ -8,8 +8,7 @@ const productSchema = new mongoose.Schema({
     price: { type: Number, required: true },
     description: { type: String, required: true },
   });
-const Product = mongoose.model('Product', productSchema);  // Changed to Product for consistency
-
+const Product = mongoose.model('Product', productSchema); 
 // GET all products
 router.get('/product', async (req, res) => {
     try {
@@ -32,7 +31,7 @@ router.post('/product', async (req, res) => {
 });
 
 // GET a specific product by ID
-router.get('/product', async (req, res) => {  // Corrected route to /product/:id
+router.get('/product:id', async (req, res) => {  // Corrected route to /product/:id
     try {
         const product = await Product.findById(req.params.id);  // Use the Product model here
         if (!product) {
@@ -45,7 +44,7 @@ router.get('/product', async (req, res) => {  // Corrected route to /product/:id
 });
 
 // DELETE a specific product by ID
-router.delete('/product', async (req, res) => {
+router.delete('/product:id', async (req, res) => {
     try {
         const product = await Product.findByIdAndDelete(req.params.id);  // Use the Product model here
         if (!product) {
