@@ -1,7 +1,7 @@
 import * as dotenv from 'dotenv';
 import express from 'express';
-import mongoose from 'mongoose';
-
+import mongoose from "mongoose";
+import {userRoute} from "./userRoute.js"
 
 // Load environment variables
 dotenv.config();
@@ -13,7 +13,7 @@ const port = process.env.PORT;
 // Middleware
 app.use(express.json()); // For parsing JSON requests
 app.use(express.static('public')); // Serve static files from 'public' folder
-
+app.use("/api", userRoute);
 // MongoDB Connection
 mongoose
   .connect(process.env.MONGODB_URI)
