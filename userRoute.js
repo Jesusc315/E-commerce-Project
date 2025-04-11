@@ -3,7 +3,7 @@ import express from "express";
 const router =  express.Router();
 
 
-router.post('/user/register', async (req, res) => {
+router.post('/api/user/register', async (req, res) => {
     const user = new userModel(req.body);
     try {
         const newUser = await user.save();
