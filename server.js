@@ -31,7 +31,9 @@ mongoose
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
-
+app.get('/users.json', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'users.json'));
+});
 // Checkout route
 app.get("/checkout", (req, res) => {
   const checkoutPath = path.join(__dirname, 'public', 'checkout.html');

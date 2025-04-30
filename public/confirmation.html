@@ -118,7 +118,7 @@
     color: #007bff; /* Blue for labels */
   }
 </style>
-    <script src="public/confirmation.js"></script>
+    <script src="/confirmation.js"></script>
   </head>
   <body>
     <div class="container mt-5">
@@ -173,41 +173,42 @@
 
       <!-- Back to Shopping Button -->
       <div class="text-center">
-        <a href="public/index.html" class="btn-back">Back to Shopping</a>
+        <a href="/index.html" class="btn-back">Back to Shopping</a>
       </div>
     </div>
 
     <script>
-     document.addEventListener("DOMContentLoaded", function () {
-    // Retrieve query parameters
-    const queryParams = new URLSearchParams(window.location.search);
+    document.addEventListener("DOMContentLoaded", function () {
+  const params = new URLSearchParams(window.location.search);
 
-    // Display product details
-    const productList = document.getElementById("product-list");
-    for (let i = 0; i < queryParams.keys().length; i++) {
-      const key = queryParams.key(i);
-      if (key.startsWith('product_')) {
-        const productName = queryParams.get(key);
-        const productPrice = queryParams.get('price_' + key.replace('product_', ''));
-        const productItem = document.createElement('li');
-        productItem.innerHTML = `<span class="product-name">${productName}:</span> <span class="product-price">$${productPrice}</span>`;
-        productList.appendChild(productItem);
-      }
-    }
+  // ✅ Render product list
+  const productList = document.getElementById("product-list");
+  let i = 0;
+  while (params.has(`product_${i}`)) {
+    const productText = params.get(`product_${i}`);
+    const li = document.createElement("li");
+    li.innerHTML = `<span class="product-name">${productText}</span>`;
+    productList.appendChild(li);
+    i++;
+  }
 
-    // Populate pricing
-    document.getElementById("subtotal").textContent = queryParams.get('subtotal');
-    document.getElementById("tax").textContent = queryParams.get('tax');
-    document.getElementById("total").textContent = queryParams.get('total');
+  // ✅ Pricing info
+  document.getElementById("subtotal").textContent = params.get("subtotal") || "0.00";
+  document.getElementById("tax").textContent = params.get("tax") || "0.00";
+  document.getElementById("total").textContent = params.get("total") || "0.00";
 
-    // Populate shipping info
-    document.getElementById("email").textContent = queryParams.get('email');
-    document.getElementById("address").textContent = queryParams.get('address');
-    document.getElementById("apartment").textContent = queryParams.get('apartment') || 'Not Provided';
-    document.getElementById("city").textContent = queryParams.get('city');
-    document.getElementById("state").textContent = queryParams.get('state');
-    document.getElementById("zip").textContent = queryParams.get('zip');
-  });
+  // ✅ Shipping info
+  document.getElementById("email").textContent = params.get("email") || "N/A";
+  document.getElementById("address").textContent = params.get("address") || "N/A";
+  document.getElementById("apartment").textContent = params.get("apartment") || "Not Provided";
+  document.getElementById("city").textContent = params.get("city") || "N/A";
+  document.getElementById("state").textContent = params.get("state") || "N/A";
+  document.getElementById("zip").textContent = params.get("zip") || "N/A";
+
+  // ✅ Clean up the URL after loading
+  window.history.replaceState({}, document.title, window.location.pathname);
+});
+
     </script>
   </body>
 </html>

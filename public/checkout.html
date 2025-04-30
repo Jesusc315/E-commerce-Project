@@ -238,10 +238,10 @@ footer p {
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-auto">
           <li class="nav-item">
-            <a class="nav-link" href="public/index.html">Products</a>
+            <a class="nav-link" href="/index.html">Products</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="public/checkout.html">Checkout</a>
+            <a class="nav-link" href="/checkout.html">Checkout</a>
           </li>
         </ul>
       </div>
@@ -468,7 +468,8 @@ footer p {
             params.set('subtotal', subtotal.toFixed(2));
             params.set('tax', tax.toFixed(2));
             params.set('total', total.toFixed(2));
-
+            url.search = params.toString();
+            window.location.href = url;
             // Include all product prices
             products.forEach((price, index) => {
               params.set(`product_${index}`, `Product: $${price}`);
