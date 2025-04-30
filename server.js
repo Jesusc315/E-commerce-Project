@@ -1,9 +1,10 @@
 import * as dotenv from 'dotenv';
 import express from 'express';
+import bodyParser from 'body-parser';
 import path from 'path'; // For working with file paths
 import mongoose from "mongoose";
-import { userRoute } from "./userRoute.js";
-
+import { userRoute } from "./routes/userRoute.js";
+import {authRoute} from "./routes/authRoute.js"
 // Load environment variables
 dotenv.config();
 
@@ -15,11 +16,13 @@ const port = process.env.PORT || 3000; // Default to port 3000 if no PORT is set
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
 
 // Middleware
+app.use(bodyParser.json());
 app.use(express.json()); // For parsing JSON requests
 app.use(express.static('public')); // Serve static files from 'public' folder
 
 // User API route
 app.use("/api", userRoute);
+app.use('/api', authRoute);
 
 // MongoDB Connection
 mongoose

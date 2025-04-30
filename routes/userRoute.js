@@ -1,9 +1,9 @@
-import {userModel} from "./user.js";
+import {userModel} from "../models/User.js";
 import express from "express";
 const router =  express.Router();
 
 
-router.post('/api/user/register', async (req, res) => {
+router.post('/api/login', async (req, res) => {
     const user = new userModel(req.body);
     try {
         const newUser = await user.save();
