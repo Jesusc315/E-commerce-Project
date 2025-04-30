@@ -22,7 +22,7 @@ app.use(express.static('public')); // Serve static files from 'public' folder
 
 // User API route
 app.use("/api", userRoute);
-app.use('/api', authRoute);
+app.use('/api/auth', authRoute);
 
 // MongoDB Connection
 mongoose
