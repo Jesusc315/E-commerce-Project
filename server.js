@@ -5,6 +5,8 @@ import path from 'path'; // For working with file paths
 import mongoose from "mongoose";
 import { userRoute } from "./routes/userRoute.js";
 import {authRoute} from "./routes/authRoute.js"
+import { fileURLToPath } from 'url';
+
 // Load environment variables
 dotenv.config();
 
@@ -13,12 +15,13 @@ const app = express();
 const port = process.env.PORT || 3000; // Default to port 3000 if no PORT is set
 
 // Get current directory path using import.meta.url
-const __dirname = path.dirname(new URL(import.meta.url).pathname);
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Middleware
 app.use(bodyParser.json());
 app.use(express.json()); // For parsing JSON requests
-app.use(express.static('public')); // Serve static files from 'public' folder
+
 
 // User API route
 app.use("/api", userRoute);
@@ -32,8 +35,11 @@ mongoose
 
 // Basic route
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  res.sendFile(path.join(__dirname, 'public', 'register.html'));
 });
+
+app.use(express.static('public')); // Serve static files from 'public' folder
+
 app.get('/users.json', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'users.json'));
 });
