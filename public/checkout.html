@@ -297,30 +297,18 @@ footer p {
         </div>
 
         <!-- Login Information -->
-        <h2>Login</h2>
-        <h3 id="error"></h3>
-        <div class="form-group">
-          <label for="email">Email address <span class="text-danger">*</span></label>
-          <input
-            type="email"
-            class="form-control"
-            id="email"
-            name="email"
-            placeholder="Enter your email"
-            required
-          />
-        </div>
-        <div class="form-group">
-          <label for="password">Password <span class="text-danger">*</span></label>
-          <input
-            type="password"
-            class="form-control"
-            id="password"
-            name="password"
-            placeholder="Enter your password"
-            required
-          />
-        </div>
+        <form id="login-form" class="mt-4">
+          <div class="mb-3">
+            <label for="email" class="form-label">Email address</label>
+            <input type="email" id="email" class="form-control" required />
+          </div>
+          <div class="mb-3">
+            <label for="password" class="form-label">Password</label>
+            <input type="password" id="password" class="form-control" required />
+          </div>
+          <button type="submit" class="btn btn-primary w-100">Login</button>
+          <p class="text-danger mt-2" id="login-error"></p>
+        </form>
 
         <!-- Shipping Information -->
         <h2>Shipping Address</h2>
@@ -427,110 +415,84 @@ footer p {
         <button type="submit" class="btn btn-primary" id="submit-btn">Submit</button>
       </form>
     </div>
-    <script> 
-    document.addEventListener("DOMContentLoaded", function () {
-  const query = new URLSearchParams(window.location.search);
-  const cartItems = Array.from(query.entries());
-  const cartSummary = document.getElementById('cart-summary');
-  
-  let subtotal = 0;
-  let productHTML = "";
-  let products = [];
-
-  // Load user data from users.json
-  fetch('/users.json')
-    .then(response => response.json())
-    .then(users => {
-      // Validate the login form
-      document.getElementById('submit-btn').addEventListener('click', function (e) {
-        console.log("Submit button clicked");
-        e.preventDefault(); // Prevent form submission
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-
-        // Check if the email and password match any user
-        const user = users.find(u => u.email === email && u.password == password);
-
-        if (user) {
-          // Login successful, proceed with the checkout form submission
-          const form = document.getElementById('checkout-form');
-          if (form.checkValidity()) {  
-            const formData = new FormData(form);  // Capture all form data
-            const url = new URL('/confirmation', window.location.origin);
-            const params = new URLSearchParams();
-
-            // Add all form fields to URL params
-            formData.forEach((value, key) => {
-              params.set(key, value); // This includes the email
-            });
-
-            // Include calculated prices and products as well
-            params.set('subtotal', subtotal.toFixed(2));
-            params.set('tax', tax.toFixed(2));
-            params.set('total', total.toFixed(2));
-            url.search = params.toString();
-            window.location.href = url;
-            // Include all product prices
-            products.forEach((price, index) => {
-              params.set(`product_${index}`, `Product: $${price}`);
-            });
-
-            // Log the URL to ensure correctness
-            console.log("Redirecting to confirmation:", url.href);
-
-            // Redirect to confirmation page with parameters
-            url.search = params.toString();
-            window.location.href = url; // Redirect to confirmation page
+    <script>
+      document.getElementById("login-form").addEventListener("submit", async function (e) {
+        e.preventDefault();
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("password").value;
+    
+        try {
+          const res = await fetch("/api/auth/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password })
+          });
+    
+          const data = await res.json();
+    
+          if (!res.ok) {
+            document.getElementById("login-error").textContent = data.message || "Login failed";
           } else {
-            form.reportValidity(); // Show validation errors if any
+            // Save the JWT token to localStorage after successful login
+            localStorage.setItem("token", data.token);
+            alert("Login successful");
+    
+            // Redirect to the checkout page (if desired, you can also reload the page to make sure JWT is available)
+            window.location.href = "/checkout.html";
           }
-        } else {
-          // Show error if email/password is invalid
-          document.getElementById('error').textContent = 'Invalid email or password';
+        } catch (err) {
+          document.getElementById("login-error").textContent = "Server error, please try again later.";
         }
       });
-    })
-    .catch(error => {
-      console.error('Error loading users.json:', error);
-      // Handle errors loading the JSON file
-    });
-
-  // Loop through the cart items and sum up the prices
-  cartItems.forEach(([key, value]) => {
-    if (key === 'name' || key === 'price') {
-      if (key === 'name') {
-        productHTML += `<p><strong>Product:</strong> ${value}</p>`;
-      }
-      if (key === 'price') {
-        subtotal += parseFloat(value); // Add price to subtotal
-        products.push(value); // Save product price for later
-      }
-    }
-  });
-
-  // Assuming tax is 15%
-  const tax = subtotal * 0.15;
-  const total = subtotal + tax;
-
-  // Display product details, subtotal, tax, and total
-  let productListHTML = "";
-  cartItems.forEach(([key, value], index) => {
-    if (key === 'name' || key === 'price') {
-      if (key === 'name') {
-        const price = cartItems[index + 1] ? cartItems[index + 1][1] : 0; // Get next price value
-        productListHTML += `<div><strong>${value}:</strong> <span class="product-price">$${price}</span></div>`;
-      }
-    }
-  });
-
-  // Insert product details into cart-summary
-  document.getElementById('product-details').innerHTML = productListHTML;
-  document.getElementById('subtotal').textContent = "$" + subtotal.toFixed(2);
-  document.getElementById('tax').textContent = "$" + tax.toFixed(2);
-  document.getElementById('total').textContent = "$" + total.toFixed(2);
-});
-
     </script>
+ <script>
+  document.getElementById("checkout-form").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    
+    // Collect the form data
+    const formData = new FormData(this);
+    const password = document.getElementById("password").value; // Add the password to the request
+
+    // Get the JWT token from localStorage
+    const token = localStorage.getItem("token");
+
+    // If no token is found, show error
+    if (!token) {
+      alert("Please log in to proceed with checkout.");
+      return;
+    }
+
+    try {
+      // Send checkout data with JWT token
+      const res = await fetch("/api/cart/checkout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`, // Include JWT in Authorization header
+        },
+        body: JSON.stringify({
+          password, // Include password for verification
+          products: products, // Products array
+          shipping: formData.get('address'), // Add other fields here
+          subtotal: subtotal.toFixed(2),
+          tax: tax.toFixed(2),
+          total: total.toFixed(2),
+        })
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        alert("Checkout successful, order placed!");
+        window.location.href = "/confirmation.html"; // Redirect to confirmation page (or wherever)
+      } else {
+        alert(`Checkout failed: ${data.message}`);
+      }
+    } catch (err) {
+      console.error("Error:", err);
+      alert("An error occurred. Please try again later.");
+    }
+  });
+</script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   </body>
 </html>

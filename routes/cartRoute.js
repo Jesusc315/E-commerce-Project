@@ -1,59 +1,58 @@
-// routes/cartRoute.js
-import express from "express";
-import { CartModel } from "../models/Cart.js";
-import { productModel } from "../models/Product.js";
+import express from 'express';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
+import { cartModel } from '../models/Cart.js';
+import { userModel } from '../models/User.js';
 
 const router = express.Router();
 
-// Get cart for a user
-router.get("/:email", async (req, res) => {
+const authenticateJWT = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader?.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({ message: 'Missing token' });
+  }
+
+  jwt.verify(token, 'yourSecretKey', (err, decoded) => {
+    if (err) return res.status(403).json({ message: 'Invalid token' });
+
+    req.userId = decoded.userId;
+    next();
+  });
+};
+
+// POST /api/cart/checkout
+router.post('/checkout', authenticateJWT, async (req, res) => {
+  const { products, shipping, subtotal, tax, total, password } = req.body;
+
+  if (!products?.length || !shipping || !subtotal || !tax || !total || !password) {
+    return res.status(400).json({ message: 'Missing required fields' });
+  }
+
   try {
-    const cart = await CartModel.findOne({ userEmail: req.params.email }).populate("items.product");
-    if (!cart) return res.json({ items: [] });
-    res.json(cart);
+
+    const user = await userModel.findById(req.userId);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) return res.status(403).json({ message: 'Incorrect password' });
+
+    const newCart = new cartModel({
+      user: req.userId,
+      products,
+      shipping,
+      subtotal,
+      tax,
+      total
+    });
+
+    const savedCart = await newCart.save();
+    res.status(201).json({ message: 'Cart saved successfully', orderId: savedCart._id });
   } catch (err) {
-    res.status(500).json({ message: "Error fetching cart" });
+    console.error('Error saving cart:', err);
+    res.status(500).json({ message: 'Server error saving cart' });
   }
 });
 
-// Add product to cart
-router.post("/add", async (req, res) => {
-  const { email, productId, quantity } = req.body;
-  try {
-    let cart = await CartModel.findOne({ userEmail: email });
-
-    if (!cart) {
-      cart = new CartModel({ userEmail: email, items: [] });
-    }
-
-    const index = cart.items.findIndex(item => item.product.toString() === productId);
-    if (index > -1) {
-      cart.items[index].quantity += quantity || 1;
-    } else {
-      cart.items.push({ product: productId, quantity: quantity || 1 });
-    }
-
-    await cart.save();
-    res.status(200).json(cart);
-  } catch (err) {
-    res.status(500).json({ message: "Error adding to cart" });
-  }
-});
-
-// Remove product from cart
-router.post("/remove", async (req, res) => {
-  const { email, productId } = req.body;
-  try {
-    const cart = await CartModel.findOne({ userEmail: email });
-    if (!cart) return res.status(404).json({ message: "Cart not found" });
-
-    cart.items = cart.items.filter(item => item.product.toString() !== productId);
-    await cart.save();
-
-    res.status(200).json(cart);
-  } catch (err) {
-    res.status(500).json({ message: "Error removing from cart" });
-  }
-});
-
-export { router as cartRoute };
+export default router;

@@ -1,6 +1,5 @@
 import * as dotenv from 'dotenv';
 import express from 'express';
-import bodyParser from 'body-parser';
 import path from 'path'; // For working with file paths
 import mongoose from "mongoose";
 import { cartRoute } from "./routes/cartRoute.js";
