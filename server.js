@@ -3,8 +3,9 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import path from 'path'; // For working with file paths
 import mongoose from "mongoose";
-import { userRoute } from "./routes/userRoute.js";
+import { cartRoute } from "./routes/cartRoute.js";
 import {authRoute} from "./routes/authRoute.js"
+import { productRoutes } from "./routes/productRoute.js";
 import { fileURLToPath } from 'url';
 
 // Load environment variables
@@ -19,13 +20,13 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Middleware
-app.use(bodyParser.json());
 app.use(express.json()); // For parsing JSON requests
 
 
 // User API route
-app.use("/api", userRoute);
+app.use("/api/cart", cartRoute);
 app.use('/api/auth', authRoute);
+app.use("/api/products", productRoutes);
 
 // MongoDB Connection
 mongoose

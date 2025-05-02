@@ -1,10 +1,10 @@
 import express from "express";
-import { productModel } from "../models/product.js";
+import { productModel } from "../models/Product.js";
 
 const router = express.Router();
 
 // Create a new product
-router.post("/products", async (req, res) => {
+router.post("/", async (req, res) => {
   const { name, price, description, image } = req.body;
 
   if (!name || !price || !description || !image) {
@@ -28,7 +28,7 @@ router.post("/products", async (req, res) => {
 });
 
 // Get all products
-router.get("/products", async (req, res) => {
+router.get("/", async (req, res) => {
   try {
     const products = await productModel.find();
     res.status(200).json(products);
