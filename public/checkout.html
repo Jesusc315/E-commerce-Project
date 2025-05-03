@@ -219,7 +219,7 @@ footer p {
 }
 
 </style>
-    <script src="public/checkout.js"></script>
+
   </head>
   <body>
     <nav class="navbar navbar-expand-lg navbar-light bg-light" style="background-color: #007bff;">
@@ -296,20 +296,6 @@ footer p {
           </div>
         </div>
 
-        <!-- Login Information -->
-        <form id="login-form" class="mt-4">
-          <div class="mb-3">
-            <label for="email" class="form-label">Email address</label>
-            <input type="email" id="email" class="form-control" required />
-          </div>
-          <div class="mb-3">
-            <label for="password" class="form-label">Password</label>
-            <input type="password" id="password" class="form-control" required />
-          </div>
-          <button type="submit" class="btn btn-primary w-100">Login</button>
-          <p class="text-danger mt-2" id="login-error"></p>
-        </form>
-
         <!-- Shipping Information -->
         <h2>Shipping Address</h2>
         <div class="form-group">
@@ -317,7 +303,7 @@ footer p {
           <input
             type="text"
             class="form-control"
-            id="address"
+            id="shipping"
             name="address"
             placeholder="Enter your address"
             required
@@ -416,83 +402,90 @@ footer p {
       </form>
     </div>
     <script>
-      document.getElementById("login-form").addEventListener("submit", async function (e) {
-        e.preventDefault();
-        const email = document.getElementById("email").value;
-        const password = document.getElementById("password").value;
-    
-        try {
-          const res = await fetch("/api/auth/login", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, password })
-          });
-    
-          const data = await res.json();
-    
-          if (!res.ok) {
-            document.getElementById("login-error").textContent = data.message || "Login failed";
-          } else {
-            // Save the JWT token to localStorage after successful login
-            localStorage.setItem("token", data.token);
-            alert("Login successful");
-    
-            // Redirect to the checkout page (if desired, you can also reload the page to make sure JWT is available)
-            window.location.href = "/checkout.html";
-          }
-        } catch (err) {
-          document.getElementById("login-error").textContent = "Server error, please try again later.";
-        }
-      });
-    </script>
- <script>
-  document.getElementById("checkout-form").addEventListener("submit", async function (e) {
-    e.preventDefault();
-    
-    // Collect the form data
-    const formData = new FormData(this);
-    const password = document.getElementById("password").value; // Add the password to the request
+    document.addEventListener("DOMContentLoaded", () => {
+      const cartItemsContainer = document.getElementById("product-details");
+      const subtotalEl = document.getElementById("subtotal");
+      const taxEl = document.getElementById("tax");
+      const totalEl = document.getElementById("total");
+      let cartData = null;
 
-    // Get the JWT token from localStorage
-    const token = localStorage.getItem("token");
-
-    // If no token is found, show error
-    if (!token) {
-      alert("Please log in to proceed with checkout.");
-      return;
-    }
-
-    try {
-      // Send checkout data with JWT token
-      const res = await fetch("/api/cart/checkout", {
-        method: "POST",
+      // Fetch the user's cart
+      fetch("/api/cart", {
+        method: "GET",
         headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`, // Include JWT in Authorization header
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-        body: JSON.stringify({
-          password, // Include password for verification
-          products: products, // Products array
-          shipping: formData.get('address'), // Add other fields here
-          subtotal: subtotal.toFixed(2),
-          tax: tax.toFixed(2),
-          total: total.toFixed(2),
-        })
-      });
+      })
+        .then(res => res.json())
+        .then(data => {
+          cartData = data;
+          let subtotal = 0;
+          let itemsHtml = "";
 
-      const data = await res.json();
-      if (res.ok) {
-        alert("Checkout successful, order placed!");
-        window.location.href = "/confirmation.html"; // Redirect to confirmation page (or wherever)
-      } else {
-        alert(`Checkout failed: ${data.message}`);
-      }
-    } catch (err) {
-      console.error("Error:", err);
-      alert("An error occurred. Please try again later.");
-    }
-  });
-</script>
+          data.products.forEach(product => {
+            subtotal += product.price;
+            itemsHtml += `
+              <div class="card mb-2">
+                <div class="card-body">
+                  <h5>${product.name}</h5>
+                  <p>Price: $${product.price.toFixed(2)}</p>
+                </div>
+              </div>`;
+          });
+
+          const tax = subtotal * 0.15;
+          const total = subtotal + tax;
+
+          cartItemsContainer.innerHTML = itemsHtml;
+          subtotalEl.textContent = subtotal.toFixed(2);
+          taxEl.textContent = tax.toFixed(2);
+          totalEl.textContent = total.toFixed(2);
+        })
+        .catch(err => {
+          cartItemsContainer.innerHTML = "<p class='text-danger'>Failed to load cart. Please login again.</p>";
+        });
+
+      // Handle form submission
+      document.getElementById("checkout-form").addEventListener("submit", function (e) {
+        e.preventDefault();
+        const shipping = document.getElementById("shipping").value;
+        const password = document.getElementById("password").value;
+
+        if (!cartData) return alert("Cart not loaded.");
+
+        fetch("/api/cart/checkout", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({
+            products: cartData.products,
+            shipping,
+            subtotal: parseFloat(subtotalEl.textContent),
+            tax: parseFloat(taxEl.textContent),
+            total: parseFloat(totalEl.textContent),
+            password,
+          }),
+        })
+          .then(res => res.json())
+          .then(data => {
+            if (data.orderId) {
+              alert("Order placed successfully!");
+              window.location.href = "/confirmation.html";
+            } else {
+              alert("Error: " + data.message);
+            }
+          })
+          .catch(err => {
+            alert("Server error during checkout.");
+            console.error(err);
+          });
+      });
+    });
+  </script>
+   
+  
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   </body>
 </html>

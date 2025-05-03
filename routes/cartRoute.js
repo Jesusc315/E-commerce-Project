@@ -54,5 +54,20 @@ router.post('/checkout', authenticateJWT, async (req, res) => {
     res.status(500).json({ message: 'Server error saving cart' });
   }
 });
+router.get('/', authenticateJWT, async (req, res) => {
+  try {
+    const cart = await cartModel
+      .findOne({ user: req.userId })
+      .sort({ createdAt: -1 });
 
+    if (!cart) {
+      return res.status(404).json({ message: 'Cart not found for this user.' });
+    }
+
+    res.status(200).json(cart);
+  } catch (err) {
+    console.error('Error fetching cart:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
 export {router as cartRoute};
