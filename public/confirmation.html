@@ -178,37 +178,40 @@
     </div>
 
     <script>
-    document.addEventListener("DOMContentLoaded", function () {
-  const params = new URLSearchParams(window.location.search);
+  const data = JSON.parse(localStorage.getItem("confirmation"));
 
-  // ✅ Render product list
-  const productList = document.getElementById("product-list");
-  let i = 0;
-  while (params.has(`product_${i}`)) {
-    const productText = params.get(`product_${i}`);
-    const li = document.createElement("li");
-    li.innerHTML = `<span class="product-name">${productText}</span>`;
-    productList.appendChild(li);
-    i++;
+  if (!data || !data.products || !data.shipping) {
+    document.querySelector(".container").innerHTML = `
+      <div class="confirmation-header text-danger">
+        <h1>Order Not Found</h1>
+        <p>We couldn't find your order confirmation. Please try placing your order again.</p>
+        <a href="/index.html" class="btn-back">Back to Shopping</a>
+      </div>
+    `;
+  } else {
+    const { shipping, products, subtotal, tax, total } = data;
+
+    // Fill in shipping info
+    document.getElementById("email").textContent = shipping.email || "N/A";
+    document.getElementById("address").textContent = shipping.address;
+    document.getElementById("apartment").textContent = shipping.apartment || "N/A";
+    document.getElementById("city").textContent = shipping.city;
+    document.getElementById("state").textContent = shipping.state;
+    document.getElementById("zip").textContent = shipping.zip;
+
+    // Fill in totals
+    document.getElementById("subtotal").textContent = subtotal.toFixed(2);
+    document.getElementById("tax").textContent = tax.toFixed(2);
+    document.getElementById("total").textContent = total.toFixed(2);
+
+    // Fill in product list
+    const list = document.getElementById("product-list");
+    products.forEach(p => {
+      const li = document.createElement("li");
+      li.innerHTML = `<span class="product-name">${p.name}</span> - <span class="product-price">$${p.price.toFixed(2)}</span>`;
+      list.appendChild(li);
+    });
   }
-
-  // ✅ Pricing info
-  document.getElementById("subtotal").textContent = params.get("subtotal") || "0.00";
-  document.getElementById("tax").textContent = params.get("tax") || "0.00";
-  document.getElementById("total").textContent = params.get("total") || "0.00";
-
-  // ✅ Shipping info
-  document.getElementById("email").textContent = params.get("email") || "N/A";
-  document.getElementById("address").textContent = params.get("address") || "N/A";
-  document.getElementById("apartment").textContent = params.get("apartment") || "Not Provided";
-  document.getElementById("city").textContent = params.get("city") || "N/A";
-  document.getElementById("state").textContent = params.get("state") || "N/A";
-  document.getElementById("zip").textContent = params.get("zip") || "N/A";
-
-  // ✅ Clean up the URL after loading
-  window.history.replaceState({}, document.title, window.location.pathname);
-});
-
-    </script>
+</script>
   </body>
 </html>

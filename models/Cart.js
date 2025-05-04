@@ -10,6 +10,7 @@ const productSchema = new mongoose.Schema({
 
 // Schema for shipping details
 const shippingSchema = new mongoose.Schema({
+  email: {type:String, required: true},
   address: { type: String, required: true },
   apartment: { type: String },
   city: { type: String, required: true },

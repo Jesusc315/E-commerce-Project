@@ -298,6 +298,20 @@ footer p {
 
         <!-- Shipping Information -->
         <h2>Shipping Address</h2>
+        <div class="form-group mt-3">
+  <label for="password">Confirm Password</label>
+  <input
+    type="password"
+    class="form-control"
+    id="password"
+    placeholder="Re-enter your password"
+    required
+  />
+  <label for=" email">Email</label>
+  <input type="email" class="form-control" id="email" required placeholder="Re-enter your email" />
+
+</div>
+
         <div class="form-group">
           <label for="address">Address <span class="text-danger">*</span></label>
           <input
@@ -401,86 +415,94 @@ footer p {
         <button type="submit" class="btn btn-primary" id="submit-btn">Submit</button>
       </form>
     </div>
-    <script>
+     <script>
     document.addEventListener("DOMContentLoaded", () => {
-      const cartItemsContainer = document.getElementById("product-details");
+      const token = localStorage.getItem("token");
+      if (!token) {
+        alert("Please login first.");
+        window.location.href = "/login.html";
+      }
+
+      const cartContainer = document.getElementById("product-details");
       const subtotalEl = document.getElementById("subtotal");
       const taxEl = document.getElementById("tax");
       const totalEl = document.getElementById("total");
       let cartData = null;
 
-      // Fetch the user's cart
       fetch("/api/cart", {
         method: "GET",
-        headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       })
         .then(res => res.json())
         .then(data => {
           cartData = data;
           let subtotal = 0;
-          let itemsHtml = "";
+          let itemsHTML = "";
 
-          data.products.forEach(product => {
-            subtotal += product.price;
-            itemsHtml += `
-              <div class="card mb-2">
-                <div class="card-body">
-                  <h5>${product.name}</h5>
-                  <p>Price: $${product.price.toFixed(2)}</p>
-                </div>
-              </div>`;
+          data.products.forEach(p => {
+            subtotal += p.price;
+            itemsHTML += `<div>${p.name} - $${p.price.toFixed(2)}</div>`;
           });
 
           const tax = subtotal * 0.15;
           const total = subtotal + tax;
 
-          cartItemsContainer.innerHTML = itemsHtml;
+          cartContainer.innerHTML = itemsHTML;
           subtotalEl.textContent = subtotal.toFixed(2);
           taxEl.textContent = tax.toFixed(2);
           totalEl.textContent = total.toFixed(2);
         })
-        .catch(err => {
-          cartItemsContainer.innerHTML = "<p class='text-danger'>Failed to load cart. Please login again.</p>";
+        .catch(() => {
+          cartContainer.innerHTML = "<p class='text-danger'>Failed to load cart. Please login again.</p>";
         });
 
-      // Handle form submission
       document.getElementById("checkout-form").addEventListener("submit", function (e) {
         e.preventDefault();
-        const shipping = document.getElementById("shipping").value;
+
+        const shippingData = {
+          email: document.getElementById("email").value,
+          address: document.getElementById("shipping").value,
+          apartment: document.getElementById("apartment").value,
+          city: document.getElementById("city").value,
+          state: document.getElementById("state").value,
+          zip: document.getElementById("zip").value,
+        };
+
         const password = document.getElementById("password").value;
 
         if (!cartData) return alert("Cart not loaded.");
+
+        const payload = {
+          products: cartData.products,
+          shipping: shippingData,
+          subtotal: parseFloat(subtotalEl.textContent),
+          tax: parseFloat(taxEl.textContent),
+          total: parseFloat(totalEl.textContent),
+          password,
+        };
 
         fetch("/api/cart/checkout", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({
-            products: cartData.products,
-            shipping,
-            subtotal: parseFloat(subtotalEl.textContent),
-            tax: parseFloat(taxEl.textContent),
-            total: parseFloat(totalEl.textContent),
-            password,
-          }),
+          body: JSON.stringify(payload),
         })
           .then(res => res.json())
           .then(data => {
             if (data.orderId) {
-              alert("Order placed successfully!");
+              const confirmationData = {
+                orderId: data.orderId,
+                ...payload,
+              };
+              localStorage.setItem("confirmation", JSON.stringify(confirmationData));
               window.location.href = "/confirmation.html";
             } else {
-              alert("Error: " + data.message);
+              alert("Checkout failed: " + data.message);
             }
           })
-          .catch(err => {
-            alert("Server error during checkout.");
-            console.error(err);
-          });
+          .catch(() => alert("Server error during checkout."));
       });
     });
   </script>
