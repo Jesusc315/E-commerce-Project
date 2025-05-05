@@ -27,38 +27,67 @@ const authenticateJWT = (req, res, next) => {
 router.post('/', authenticateJWT, async (req, res) => {
   const { products, shipping, subtotal, tax, total, password } = req.body;
 
-  if (!products?.length || !shipping || !subtotal || !tax || !total || !password) {
-    return res.status(400).json({ message: 'Missing required fields' });
+  // 🚨 Validate and normalize products for both draft and full cart
+  if (!Array.isArray(products) || products.length === 0) {
+    return res.status(400).json({ message: 'Products are required' });
   }
-if (!shipping.email || !/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(shipping.email)) {
-  return res.status(400).json({ message: 'Invalid or missing email' });
-} 
+
+  const normalizedProducts = products.map((p) => ({
+    productId: p.productId,
+    quantity: p.quantity || 1,
+  }));
+
+  // 🔹 PARTIAL CHECKOUT (only products)
+  if (!shipping && !subtotal && !tax && !total && !password) {
+    try {
+      console.log("🟡 Saving draft cart for user:", req.userId);
+      const draftCart = new cartModel({
+        user: req.userId,
+        products: normalizedProducts,
+        isDraft: true,
+      });
+
+      const savedCart = await draftCart.save();
+      console.log("✅ Draft cart saved:", savedCart._id);
+      return res.status(201).json({ message: 'Cart draft saved', cartId: savedCart._id });
+    } catch (err) {
+      console.error("❌ Error saving draft cart:", err);
+      return res.status(500).json({ message: 'Server error saving draft' });
+    }
+  }
+
+  // 🔹 FULL CHECKOUT
+  if (!shipping || !subtotal || !tax || !total || !password) {
+    return res.status(400).json({ message: 'Missing fields for final checkout' });
+  }
+
+  if (!shipping.email || !/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(shipping.email)) {
+    return res.status(400).json({ message: 'Invalid email format' });
+  }
+
   try {
-    // Check if the user exists
     const user = await userModel.findById(req.userId);
     if (!user) return res.status(404).json({ message: 'User not found' });
 
-    // Check if user exists
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(403).json({ message: 'Incorrect password' });
 
-    // Create a new cart
-    const newCart = new cartModel({
+    const finalCart = new cartModel({
       user: req.userId,
-      products,
+      products: normalizedProducts,
       shipping,
       subtotal,
       tax,
       total,
+      isDraft: false,
     });
 
-    // Save the cart to the database
-    const savedCart = await newCart.save();
-    res.status(201).json({ message: 'Cart saved successfully', orderId: savedCart._id });
+    const savedCart = await finalCart.save();
+    console.log("✅ Final cart saved:", savedCart._id);
+    return res.status(201).json({ message: 'Checkout successful', orderId: savedCart._id });
   } catch (err) {
-    console.error('Error saving cart:', err);
-    res.status(500).json({ message: 'Server error saving cart' });
-    console.log("error saving chosen products");
+    console.error("❌ Error during final checkout:", err);
+    return res.status(500).json({ message: 'Server error during checkout' });
   }
 });
 
