@@ -1,7 +1,3 @@
-/*work on the checkout and make sure to add a user and password and if it matches the login page then you are able to make the oder and if not then no and say you must make an account or check if the user and password are correct,
- then you must make sure that once you add the shipping information in the checkout html that the information is sent to the confirmation page stating the summary of the user and products they have bought 
- Number one thing do though is to make sure that once the client is done picking their products that the products are sent to checkout page as a summary, including their subtotal and other such.  */
-
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -11,40 +7,29 @@
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
       rel="stylesheet"
-      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
-      crossorigin="anonymous"
     />
-    
     <link rel="stylesheet" href="index.css" />
-
-
   </head>
   <body>
     <nav class="navbar navbar-expand-lg navbar-light" style="background-color: #007bff;">
-  <a class="navbar-brand" href="#">E-Commerce</a>
-  <button
-    class="navbar-toggler"
-    type="button"
-    data-bs-toggle="collapse"
-    data-bs-target="#navbarNav"
-    aria-controls="navbarNav"
-    aria-expanded="false"
-    aria-label="Toggle navigation"
-  >
-    <span class="navbar-toggler-icon"></span>
-  </button>
-  <div class="collapse navbar-collapse" id="navbarNav">
-    <ul class="navbar-nav ms-auto">
-      <li class="nav-item">
-        <a class="nav-link" href="/register.html">Login</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="/checkout.html">Checkout</a>
-      </li>
-    </ul>
-  </div>
-</nav>
-
+      <a class="navbar-brand text-white" href="#">E-Commerce</a>
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#navbarNav"
+        aria-controls="navbarNav"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto" id="nav-user-section">
+          <!-- This will be dynamically filled based on login status -->
+        </ul>
+      </div>
+    </nav>
 
     <div class="container mt-5">
       <h1>Products</h1>
@@ -52,7 +37,7 @@
         <!-- Products will be dynamically inserted here -->
       </div>
     </div>
-   
+
     <div class="container mt-5">
       <form action="/checkout" method="get">
         <h2>Cart</h2>
@@ -66,118 +51,140 @@
     <footer class="footer text-center py-3">
       <p>&copy; 2025 E-Commerce Website. All rights reserved.</p>
     </footer>
-  <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      const productList = document.querySelector("#product-list");
-      let productsData = [];
-      let cart = [];
 
-      // Fetch products from the API and display them
-      fetch("/api/products")
-        .then((response) => response.json())
-        .then((data) => {
-          productsData = data;
-          let productHTML = "";
-          data.forEach((product) => {
-            productHTML += `<div class="col-md-4">
-              <div class="card mb-4 product-card">
-                <img src="${product.image}" class="card-img-top" alt="${product.name}">
-                <div class="card-body">
-                  <h5 class="card-title">${product.name}</h5>
-                  <p class="card-text product-price">$${product.price}</p>
-                  <p class="card-text product-description">${product.description}</p>
-                  <button class="btn btn-primary add-to-cart" data-id="${product._id}">Add to Cart</button>
-                </div>
-              </div>
-            </div>`;
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const navUserSection = document.getElementById("nav-user-section");
+        const token = localStorage.getItem("token");
+        const userEmail = localStorage.getItem("userEmail"); // Assume this is saved at login
+
+        // Update Navbar based on login status
+        if (token && userEmail) {
+          navUserSection.innerHTML = `
+            <li class="nav-item">
+              <span class="nav-link text-white">Hello, ${userEmail}</span>
+            </li>
+            <li class="nav-item">
+              <button class="nav-link btn btn-link text-white" id="logout-btn">Logout</button>
+            </li>
+          `;
+
+          document.getElementById("logout-btn").addEventListener("click", function () {
+            localStorage.removeItem("token");
+            localStorage.removeItem("userEmail");
+            window.location.href = "/register.html";
           });
-          productList.innerHTML = productHTML;
+        } else {
+          navUserSection.innerHTML = `
+            <li class="nav-item">
+              <a class="nav-link text-white" href="/register.html">Login</a>
+            </li>
+          `;
+        }
 
-          // Event listener for 'Add to Cart' buttons
-          document.querySelectorAll(".add-to-cart").forEach((button) => {
-            button.addEventListener("click", addToCart);
-          });
+        // Fetch & display products
+        const productList = document.querySelector("#product-list");
+        let productsData = [];
+        let cart = [];
 
-          // Add product to the cart
-          function addToCart(event) {
-            const productId = event.target.getAttribute("data-id");
-            const product = productsData.find((p) => p._id === productId);
-
-            let cartItem = {
-              productId: product._id, // store productId, not name/price directly
-              quantity:1,
-              name: product.name,
-              price: product.price,
-            };
-
-            cart.push(cartItem);
-            saveCartToServer(cart);
-            renderCart();
-          }
-
-          // Send cart data to the server (database) for persistence
-          function saveCartToServer(cartData) {
-           const simplifiedProducts = cartData.map(item => ({
-            productId: item.productId,
-            quantity: item.quantity || 1
-            }));
-
-  fetch("/api/cart", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${localStorage.getItem('token')}`,
-    },
-    body: JSON.stringify({ products: simplifiedProducts }),
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      console.log("Cart saved to server:", data);
-    })
-    .catch((err) => console.error("Error saving cart:", err));
-}
-
-          // Render cart (display cart items)
-          function renderCart() {
-            const cartList = document.getElementById("cart-list");
-            let cartItem = "";
-            cart.forEach((product) => {
-              cartItem += `<div class="col-md-4">
-                <div class="card mb-4">
+        fetch("/api/products")
+          .then((response) => response.json())
+          .then((data) => {
+            productsData = data;
+            let productHTML = "";
+            data.forEach((product) => {
+              productHTML += `<div class="col-md-4">
+                <div class="card mb-4 product-card">
+                  <img src="${product.image}" class="card-img-top" alt="${product.name}">
                   <div class="card-body">
-                    <h5>${product.name}</h5>
-                    <p>$${product.price}</p>
-                    <button class="btn btn-danger remove-from-cart" data-id="${product.productId}">
-                      Remove
-                    </button>
+                    <h5 class="card-title">${product.name}</h5>
+                    <p class="card-text product-price">$${product.price}</p>
+                    <p class="card-text product-description">${product.description}</p>
+                    <button class="btn btn-primary add-to-cart" data-id="${product._id}">Add to Cart</button>
                   </div>
                 </div>
               </div>`;
             });
-            cartList.innerHTML = cartItem;
+            productList.innerHTML = productHTML;
 
-            // Event listener for 'Remove from Cart'
-            document.querySelectorAll(".remove-from-cart").forEach((button) => {
-              button.addEventListener("click", removeFromCart);
+            document.querySelectorAll(".add-to-cart").forEach((button) => {
+              button.addEventListener("click", addToCart);
             });
-          }
 
-          // Remove product from cart
-          function removeFromCart(event) {
-            const productId = event.target.getAttribute("data-id");
-            const productIndex = cart.findIndex((product) => product.productId == productId);
-            cart.splice(productIndex, 1);
-            saveCartToServer(cart);
-            renderCart();
-          }
-        })
-        .catch((err) => console.error("Error fetching products:", err));
-    });
-  </script>
+            function addToCart(event) {
+              const productId = event.target.getAttribute("data-id");
+              const product = productsData.find((p) => p._id === productId);
+
+              let cartItem = {
+                productId: product._id,
+                quantity: 1,
+                name: product.name,
+                price: product.price,
+              };
+
+              cart.push(cartItem);
+              saveCartToServer(cart);
+              renderCart();
+            }
+
+            function saveCartToServer(cartData) {
+              const simplifiedProducts = cartData.map(item => ({
+                productId: item.productId,
+                quantity: item.quantity || 1
+              }));
+
+              fetch("/api/cart", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  "Authorization": `Bearer ${localStorage.getItem('token')}`,
+                },
+                body: JSON.stringify({ products: simplifiedProducts }),
+              })
+              .then((response) => response.json())
+              .then((data) => {
+                console.log("Cart saved to server:", data);
+              })
+              .catch((err) => console.error("Error saving cart:", err));
+            }
+
+            function renderCart() {
+              const cartList = document.getElementById("cart-list");
+              let cartItem = "";
+              cart.forEach((product) => {
+                cartItem += `<div class="col-md-4">
+                  <div class="card mb-4">
+                    <div class="card-body">
+                      <h5>${product.name}</h5>
+                      <p>$${product.price}</p>
+                      <button class="btn btn-danger remove-from-cart" data-id="${product.productId}">
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                </div>`;
+              });
+              cartList.innerHTML = cartItem;
+
+              document.querySelectorAll(".remove-from-cart").forEach((button) => {
+                button.addEventListener("click", removeFromCart);
+              });
+            }
+
+            function removeFromCart(event) {
+              const productId = event.target.getAttribute("data-id");
+              const productIndex = cart.findIndex((product) => product.productId == productId);
+              cart.splice(productIndex, 1);
+              saveCartToServer(cart);
+              renderCart();
+            }
+          })
+          .catch((err) => console.error("Error fetching products:", err));
+      });
+    </script>
+
     <script
       src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-      integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-      crossorigin="anonymous"
     ></script>
     <script src="script.js"></script>
   </body>

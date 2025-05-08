@@ -222,8 +222,8 @@ footer p {
 
   </head>
   <body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light" style="background-color: #007bff;">
-      <a class="navbar-brand" href="#">Navbar</a>
+      <nav class="navbar navbar-expand-lg navbar-light" style="background-color: #007bff;">
+      <a class="navbar-brand text-white" href="#">E-Commerce</a>
       <button
         class="navbar-toggler"
         type="button"
@@ -236,17 +236,11 @@ footer p {
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ms-auto">
-          <li class="nav-item">
-            <a class="nav-link" href="/index.html">Products</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/checkout.html">Checkout</a>
-          </li>
+        <ul class="navbar-nav ms-auto" id="nav-user-section">
+          <!-- This will be dynamically filled based on login status -->
         </ul>
       </div>
     </nav>
-
     <div class="container mt-5">
       <form id="checkout-form">
         <h1>Checkout</h1>
@@ -417,11 +411,33 @@ footer p {
     </div>
      <script>
     document.addEventListener("DOMContentLoaded", () => {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        alert("Please login first.");
-        window.location.href = "/login.html";
-      }
+ const navUserSection = document.getElementById("nav-user-section");
+        const token = localStorage.getItem("token");
+        const userEmail = localStorage.getItem("userEmail"); // Assume this is saved at login
+
+        // Update Navbar based on login status
+        if (token && userEmail) {
+          navUserSection.innerHTML = `
+            <li class="nav-item">
+              <span class="nav-link text-white">Hello, ${userEmail}</span>
+            </li>
+            <li class="nav-item">
+              <button class="nav-link btn btn-link text-white" id="logout-btn">Logout</button>
+            </li>
+          `;
+
+          document.getElementById("logout-btn").addEventListener("click", function () {
+            localStorage.removeItem("token");
+            localStorage.removeItem("userEmail");
+            window.location.href = "/register.html";
+          });
+        } else {
+          navUserSection.innerHTML = `
+            <li class="nav-item">
+              <a class="nav-link text-white" href="/register.html">Login</a>
+            </li>
+          `;
+        }
 
       const cartContainer = document.getElementById("product-details");
       const subtotalEl = document.getElementById("subtotal");
