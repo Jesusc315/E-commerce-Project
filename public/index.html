@@ -53,13 +53,18 @@
       <p>&copy; 2025 E-Commerce Website. All rights reserved.</p>
     </footer>
 
-   <script>
+   
+<script>
   document.addEventListener("DOMContentLoaded", function () {
-    const userEmail = localStorage.getItem("userEmail");
-    const navUserSection = document.getElementById("nav-user-section");
+    console.log("📦 DOM fully loaded");
 
-    // Navbar auth status
-    if (localStorage.getItem("token") && userEmail) {
+    const navUserSection = document.getElementById("nav-user-section");
+    const token = localStorage.getItem("token");
+    const userEmail = localStorage.getItem("userEmail");
+
+    // Setup user section
+    if (token && userEmail) {
+      console.log("🔐 Logged in as:", userEmail);
       navUserSection.innerHTML = `
         <li class="nav-item">
           <span class="nav-link text-white">Hello, ${userEmail}</span>
@@ -68,13 +73,15 @@
           <button class="nav-link btn btn-link text-white" id="logout-btn">Logout</button>
         </li>
       `;
-
-      document.getElementById("logout-btn").addEventListener("click", function () {
+      document.getElementById("logout-btn").addEventListener("click", () => {
         localStorage.removeItem("token");
         localStorage.removeItem("userEmail");
-        window.location.href = "/register.html";
+        localStorage.removeItem("cart");
+        console.log("👋 Logged out");
+        location.href = "/register.html";
       });
     } else {
+      console.log("🔓 Not logged in");
       navUserSection.innerHTML = `
         <li class="nav-item">
           <a class="nav-link text-white" href="/register.html">Login</a>
@@ -82,19 +89,21 @@
       `;
     }
 
-    // Initialize cart from localStorage
     let cart = JSON.parse(localStorage.getItem("cart")) || [];
     let productsData = [];
 
+    // Fetch products and render
     fetch("/api/products")
       .then(res => res.json())
       .then(data => {
         productsData = data;
-        renderProducts(data);
+        console.log("📦 Products fetched:", productsData);
+        renderProducts(productsData);
       })
-      .catch(err => console.error("Error fetching products:", err));
+      .catch(err => console.error("❌ Error fetching products:", err));
 
     function renderProducts(products) {
+      console.log("🎨 Rendering product cards...");
       const productList = document.getElementById("product-list");
       productList.innerHTML = products.map(product => `
         <div class="col-md-4">
@@ -110,25 +119,35 @@
         </div>
       `).join("");
 
-      document.querySelectorAll(".add-to-cart").forEach(button => {
+      const buttons = document.querySelectorAll(".add-to-cart");
+      console.log(`🧷 Hooking up ${buttons.length} Add to Cart buttons`);
+      buttons.forEach(button => {
         button.addEventListener("click", addToCart);
       });
     }
 
     function addToCart(event) {
       const productId = event.target.getAttribute("data-id");
-      const existing = cart.find(item => item.productId === productId);
+      console.log("➕ Add to cart clicked for:", productId);
 
+      const product = productsData.find(p => p._id === productId);
+      if (!product) {
+        console.warn("❌ Product ID not found:", productId);
+        return;
+      }
+
+      const existing = cart.find(item => item.productId === productId);
       if (existing) {
         existing.quantity += 1;
+        console.log(`🔁 Incremented quantity for ${productId} to ${existing.quantity}`);
       } else {
-        const product = productsData.find(p => p._id === productId);
         cart.push({
-          productId: product._id,
-          quantity: 1,
+          productId,
           name: product.name,
-          price: product.price
+          price: product.price,
+          quantity: 1,
         });
+        console.log("🆕 Added new item to cart:", product.name);
       }
 
       localStorage.setItem("cart", JSON.stringify(cart));
@@ -137,6 +156,8 @@
 
     function renderCart() {
       const cartList = document.getElementById("cart-list");
+      if (!cartList) return;
+
       cartList.innerHTML = cart.map(product => `
         <div class="col-md-4">
           <div class="card mb-4">
@@ -152,60 +173,61 @@
       document.querySelectorAll(".remove-from-cart").forEach(button => {
         button.addEventListener("click", removeFromCart);
       });
+
+      console.log("🧾 Cart updated, total items:", cart.length);
     }
 
     function removeFromCart(event) {
       const productId = event.target.getAttribute("data-id");
       cart = cart.filter(p => p.productId !== productId);
       localStorage.setItem("cart", JSON.stringify(cart));
+      console.log("🗑️ Removed item:", productId);
       renderCart();
     }
 
-    // 🔘 Save draft cart to backend
+    // Save cart to backend
     document.getElementById("save-cart-btn").addEventListener("click", () => {
-      const token = localStorage.getItem("token");  // ✅ Read fresh token
       if (!token) {
         alert("Please log in to save your cart.");
         return;
       }
 
-      const simplified = cart.map(item => ({
-        productId: item.productId,
-        quantity: item.quantity
-      }));
+      const simplified = cart.map(({ productId, quantity }) => ({ productId, quantity }));
+      console.log("📤 Sending cart to server:", simplified);
 
       fetch("/api/cart", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ products: simplified })
+        body: JSON.stringify({ products: simplified }),
       })
         .then(res => res.json())
         .then(data => {
-          alert("Cart saved!");
-          console.log("✅ Saved cart:", data);
+          console.log("✅ Cart saved:", data);
+          alert("Cart saved successfully.");
         })
         .catch(err => {
           console.error("❌ Error saving cart:", err);
-          alert("Failed to save cart.");
+          alert("Error saving cart.");
         });
     });
 
-    // Optional: prepare checkout logic using token as well
-    document.getElementById("checkout-button").addEventListener("click", (e) => {
-      const token = localStorage.getItem("token");  // ✅ Read fresh token
+    document.getElementById("checkout-button").addEventListener("click", e => {
       if (!token) {
-        e.preventDefault(); // Prevent form submission
-        alert("Please log in before proceeding to checkout.");
+        e.preventDefault();
+        alert("Please log in before checking out.");
+        console.warn("🚫 Checkout blocked: not logged in");
       }
     });
 
-    // Initial cart render
+    console.log("🕹️ Initializing cart from localStorage...");
     renderCart();
   });
 </script>
+
+
 
 
     <script
