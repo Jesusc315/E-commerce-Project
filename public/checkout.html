@@ -311,7 +311,7 @@ footer p {
           <input
             type="text"
             class="form-control"
-            id="shipping"
+            id="address"
             name="address"
             placeholder="Enter your address"
             required
@@ -409,133 +409,178 @@ footer p {
         <button type="submit" class="btn btn-primary" id="submit-btn">Submit</button>
       </form>
     </div>
-     <script>
-   document.addEventListener("DOMContentLoaded", () => {
-  const navUserSection = document.getElementById("nav-user-section");
-  const token = localStorage.getItem("token");
-  const userEmail = localStorage.getItem("userEmail"); // Assume this is saved at login
+  <script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const navUserSection = document.getElementById("nav-user-section");
+    const token = localStorage.getItem("token");
+    const userEmail = localStorage.getItem("userEmail");
 
-  // Update Navbar based on login status
-  if (token && userEmail) {
-    navUserSection.innerHTML = `
-      <li class="nav-item">
-        <span class="nav-link text-white">Hello, ${userEmail}</span>
-      </li>
-      <li class="nav-item">
-        <button class="nav-link btn btn-link text-white" id="logout-btn">Logout</button>
-      </li>
-    `;
+    if (token && userEmail) {
+      navUserSection.innerHTML = `
+        <li class="nav-item">
+          <span class="nav-link text-white">Hello, ${userEmail}</span>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link btn btn-link text-white" id="logout-btn">Logout</button>
+        </li>
+      `;
+      document.getElementById("logout-btn").addEventListener("click", () => {
+        localStorage.removeItem("token");
+        localStorage.removeItem("userEmail");
+        window.location.href = "/register.html";
+      });
+    } else {
+      navUserSection.innerHTML = `
+        <li class="nav-item">
+          <a class="nav-link text-white" href="/register.html">Login</a>
+        </li>
+      `;
+    }
 
-    document.getElementById("logout-btn").addEventListener("click", function () {
-      localStorage.removeItem("token");
-      localStorage.removeItem("userEmail");
-      window.location.href = "/register.html";
-    });
-  } else {
-    navUserSection.innerHTML = `
-      <li class="nav-item">
-        <a class="nav-link text-white" href="/register.html">Login</a>
-      </li>
-    `;
-  }
+    const cartContainer = document.getElementById("product-details");
+    const subtotalEl = document.getElementById("subtotal");
+    const taxEl = document.getElementById("tax");
+    const totalEl = document.getElementById("total");
+    let cartData = null;
 
-  const cartContainer = document.getElementById("product-details");
-  const subtotalEl = document.getElementById("subtotal");
-  const taxEl = document.getElementById("tax");
-  const totalEl = document.getElementById("total");
-  let cartData = null;
+    // Load cart from backend
+    fetch("/api/cart", {
+      method: "GET",
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.products && data.products.length > 0) {
+          cartData = data;
+          let subtotal = 0;
+          let itemsHTML = "";
 
-  // Fetch cart data
- fetch("/api/cart", {
-  method: "GET",
-  headers: { Authorization: `Bearer ${token}` },
-})
-  .then(res => res.json())
-  .then(data => {
-    console.log("Cart Data:", data);  // Check the structure of the response
-    if (data.products && data.products.length > 0) {
-      cartData = data;
-      let subtotal = 0;
-      let itemsHTML = "";
+          data.products.forEach(p => {
+            const itemTotal = p.price * (p.quantity || 1);
+            subtotal += itemTotal;
+            itemsHTML += `<div>${p.name} (x${p.quantity}) - $${itemTotal.toFixed(2)}</div>`;
+          });
 
-      // Loop through the products and calculate subtotal
-      data.products.forEach(p => {
-        subtotal += p.price;
-        itemsHTML += `<div>${p.name} - $${p.price.toFixed(2)}</div>`;
+          const tax = subtotal * 0.15;
+          const total = subtotal + tax;
+
+          cartContainer.innerHTML = itemsHTML;
+          subtotalEl.textContent = subtotal.toFixed(2);
+          taxEl.textContent = tax.toFixed(2);
+          totalEl.textContent = total.toFixed(2);
+        } else {
+          cartContainer.innerHTML = "<p>No products in your cart.</p>";
+        }
+      })
+      .catch(() => {
+        cartContainer.innerHTML = "<p class='text-danger'>Failed to load cart. Please login again.</p>";
       });
 
-      // Calculate 8% tax and total
-      const tax = subtotal * 0.08;  // 8% tax
-      const total = subtotal + tax;
+    // Checkout form submit
+   document.getElementById("checkout-form").addEventListener("submit", async function (e) {
+  e.preventDefault();
 
-      // Update the DOM with cart data
-      cartContainer.innerHTML = itemsHTML;
-      subtotalEl.textContent = subtotal.toFixed(2);
-      taxEl.textContent = tax.toFixed(2);
-      totalEl.textContent = total.toFixed(2);
-    } else {
-      cartContainer.innerHTML = "<p>No products in your cart.</p>";
-    }
-  })
-  .catch(() => {
-    cartContainer.innerHTML = "<p class='text-danger'>Failed to load cart. Please login again.</p>";
-  });
+  const token = localStorage.getItem("token");
+  if (!token) {
+    alert("Please login first.");
+    return;
+  }
 
+  if (!cartData || !cartData.products || cartData.products.length === 0) {
+    alert("Your cart is empty.");
+    return;
+  }
 
-  // Checkout form submission
-  document.getElementById("checkout-form").addEventListener("submit", function (e) {
-    e.preventDefault();
+  // Prepare products array with correct productId and quantity
+  let products;
+  try {
+    products = cartData.products.map(p => {
+  const productId = (p.productId && typeof p.productId === "object" && p.productId._id)
+    ? p.productId._id
+    : (typeof p.productId === "string")
+    ? p.productId
+    : null;
 
-    // Collect shipping info
-    const shippingData = {
-      email: document.getElementById("email").value,
-      address: document.getElementById("shipping").value,
-      apartment: document.getElementById("apartment").value,
-      city: document.getElementById("city").value,
-      state: document.getElementById("state").value,
-      zip: document.getElementById("zip").value,
-    };
+  if (!productId) {
+    throw new Error("Invalid productId detected in cart.");
+  }
 
-    const password = document.getElementById("password").value;
+  return {
+    productId,
+    quantity: p.quantity || 1,
+    name: p.name || "Unnamed product",
+    price: p.price || 0,
+  };
+});
 
-    if (!cartData) return alert("Cart not loaded.");
+  } catch (err) {
+    alert(err.message);
+    return;
+  }
 
-    const payload = {
-      products: cartData.products,
-      shipping: shippingData,
-      subtotal: parseFloat(subtotalEl.textContent),
-      tax: parseFloat(taxEl.textContent),
-      total: parseFloat(totalEl.textContent),
-      password,
-    };
+  // Gather shipping info from form inputs
+  const shippingData = {
+    email: document.getElementById("email").value.trim(),
+    address: document.getElementById("shipping").value.trim(),
+    apartment: document.getElementById("apartment").value.trim(),
+    city: document.getElementById("city").value.trim(),
+    state: document.getElementById("state").value,
+    zip: document.getElementById("zip").value.trim(),
+  };
 
-    // Send checkout request to the backend
-    fetch("/api/cart/checkout", {
+  // Basic frontend validation (optional but recommended)
+  if (!shippingData.email || !shippingData.address || !shippingData.city || !shippingData.state || !shippingData.zip) {
+    alert("Please fill in all required shipping fields.");
+    return;
+  }
+
+  const password = document.getElementById("password").value;
+  if (!password) {
+    alert("Please confirm your password.");
+    return;
+  }
+
+  // Parse subtotal, tax, total from DOM and convert to numbers
+  const subtotal = parseFloat(document.getElementById("subtotal").textContent);
+  const tax = parseFloat(document.getElementById("tax").textContent);
+  const total = parseFloat(document.getElementById("total").textContent);
+
+  // Final payload
+  const payload = {
+    products,
+    shipping: shippingData,
+    subtotal,
+    tax,
+    total,
+    password,
+  };
+
+  try {
+    const response = await fetch("/api/cart/checkout", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify(payload),
-    })
-      .then(res => res.json())
-      .then(data => {
-        if (data.orderId) {
-          const confirmationData = {
-            orderId: data.orderId,
-            ...payload,
-          };
-          localStorage.setItem("confirmation", JSON.stringify(confirmationData));
-          window.location.href = "/confirmation.html";
-        } else {
-          alert("Checkout failed: " + data.message);
-        }
-      })
-      .catch(() => alert("Server error during checkout."));
-  });
-});
+    });
 
-  </script>
+    const data = await response.json();
+
+    if (response.ok && data.orderId) {
+      localStorage.setItem("confirmation", JSON.stringify({ ...payload, orderId: data.orderId }));
+      window.location.href = "/confirmation.html";
+    } else {
+      alert("Checkout failed: " + (data.message || "Unknown error"));
+    }
+  } catch (err) {
+    console.error("Checkout error:", err);
+    alert("Server error during checkout. Please try again later.");
+  }
+});
+  })
+</script>
+
    
   
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

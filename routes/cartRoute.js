@@ -111,6 +111,7 @@ router.get('/', authenticateJWT, async (req, res) => {
     // Send the cart with specific fields formatted for the frontend
     res.status(200).json({
       products: cart.products.map(p => ({
+         productId: p.productId._id,
         name: p.productId.name,
         price: p.productId.price,
         quantity: p.quantity,
@@ -124,5 +125,81 @@ router.get('/', authenticateJWT, async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
+
+// POST /api/cart/checkout - Finalize checkout
+router.post('/checkout', authenticateJWT, async (req, res) => {
+  const { products, shipping, subtotal, tax, total, password } = req.body;
+
+  if (!products || !shipping || !subtotal || !tax || !total || !password) {
+    return res.status(400).json({ message: 'Missing fields for final checkout' });
+  }
+
+  if (!shipping.email || !/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(shipping.email)) {
+    return res.status(400).json({ message: 'Invalid email format' });
+  }
+
+  try {
+    const user = await userModel.findById(req.userId);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) return res.status(403).json({ message: 'Incorrect password' });
+
+    const normalizedProducts = products.map(p => ({
+      productId: p.productId,
+      quantity: p.quantity || 1,
+    }));
+
+    const finalCart = new cartModel({
+      user: req.userId,
+      products: normalizedProducts,
+      shipping,
+      subtotal,
+      tax,
+      total,
+      isDraft: false,
+    });
+
+    const savedCart = await finalCart.save();
+    return res.status(201).json({ message: 'Checkout successful', orderId: savedCart._id });
+  } catch (err) {
+    console.error("Error during checkout:", err);
+    return res.status(500).json({ message: 'Server error during checkout' });
+  }
+});
+// GET /api/cart/order/:id - Return detailed order info
+router.get("/order/:id", authenticateJWT, async (req, res) => {
+  const orderId = req.params.id;
+
+  try {
+    const order = await cartModel
+      .findOne({ _id: orderId, user: req.userId })
+      .populate("products.productId", "name price"); // populate product info
+
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    // Build response
+    const formattedOrder = {
+      orderId: order._id,
+      products: order.products.map(p => ({
+        name: p.productId?.name || "Unknown product",
+        price: p.productId?.price || 0,
+        quantity: p.quantity || 1,
+      })),
+      shipping: order.shipping,
+      subtotal: order.subtotal,
+      tax: order.tax,
+      total: order.total,
+    };
+
+    res.status(200).json(formattedOrder);
+  } catch (err) {
+    console.error("Error fetching order details:", err);
+    res.status(500).json({ message: "Server error fetching order" });
+  }
+});
+
 
 export { router as cartRoute };
