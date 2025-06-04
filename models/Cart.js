@@ -24,6 +24,9 @@ const cartSchema = new mongoose.Schema({
   shipping: {
     fullName: { type: String },
     address: { type: String },
+    city:{type:String},
+    state:{type:String},
+    zip:{type:Number},
     email: {
       type: String,
       match: [/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/, 'Invalid email format']

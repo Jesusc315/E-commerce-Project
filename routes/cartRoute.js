@@ -25,7 +25,7 @@ const authenticateJWT = (req, res, next) => {
 
 // POST /api/cart/checkout - To finalize the cart and checkout
 router.post('/', authenticateJWT, async (req, res) => {
-  const { products, shipping, subtotal, tax, total, password } = req.body;
+  const { products, shipping, city, state, zip, subtotal, tax, total, password } = req.body;
 
   // Validate and normalize products for both draft and full cart
   if (!Array.isArray(products) || products.length === 0) {
@@ -57,7 +57,7 @@ router.post('/', authenticateJWT, async (req, res) => {
   }
 
   // FULL CHECKOUT
-  if (!shipping || !subtotal || !tax || !total || !password) {
+  if (!shipping || !subtotal || !tax || !total || !password || !city || !state || !zip) {
     return res.status(400).json({ message: 'Missing fields for final checkout' });
   }
 
@@ -76,6 +76,9 @@ router.post('/', authenticateJWT, async (req, res) => {
       user: req.userId,
       products: normalizedProducts,
       shipping,
+      city,
+      state,
+      zip,
       subtotal,
       tax,
       total,
