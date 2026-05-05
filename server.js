@@ -28,17 +28,22 @@ app.use('/api/auth', authRoute);
 app.use("/api/products", productRoutes);
 
 // MongoDB Connection
-mongoose
-  .connect(process.env.MONGODB_URI)
-  .then(() => console.log('Connected to MongoDB'))
-  .catch(err => console.error('MongoDB connection error:', err));
+const dbUri = process.env.MONGODB_URI || process.env.MONGO_URI;
+if (!dbUri) {
+  console.error('Missing MongoDB URI: set MONGODB_URI in Vercel Environment Variables');
+} else {
+  mongoose
+    .connect(dbUri)
+    .then(() => console.log('Connected to MongoDB'))
+    .catch(err => console.error('MongoDB connection error:', err));
+}
 
 // Basic route
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'register.html'));
 });
 
-app.use(express.static('public')); // Serve static files from 'public' folder
+app.use(express.static(path.join(__dirname, 'public'))); // Serve static files from 'public' folder
 
 app.get('/users.json', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'users.json'));
