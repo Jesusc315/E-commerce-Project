@@ -53,7 +53,6 @@ app.get("/confirmation", (req, res) => {
   const confirmationPath = path.join(__dirname, 'public', 'confirmation.html');
   res.sendFile(confirmationPath);
 })
-// Start server
-app.listen(port, () => {
-  console.log(`Server is running at http://localhost:${port}`);
-});
+
+// Export the app for Vercel serverless deployment
+export default app;
